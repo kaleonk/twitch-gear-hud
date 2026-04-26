@@ -11,8 +11,14 @@ import {
 import { isSupabaseConfigured, supabase } from './supabaseClient';
 
 function App() {
+  const forcedMode = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    return mode === 'viewer' || mode === 'config' ? mode : null;
+  }, []);
+
   const [isExtensionEnv, setIsExtensionEnv] = useState(false);
-  const [mode, setMode] = useState('viewer');
+  const [mode, setMode] = useState(forcedMode ?? 'viewer');
   const [channelId, setChannelId] = useState(FALLBACK_CHANNEL_ID);
   const [gear, setGear] = useState(initialGearData);
   const [isPro, setIsPro] = useState(false);
@@ -33,10 +39,15 @@ function App() {
         setChannelId(auth.channelId);
       }
 
+      if (forcedMode) {
+        setMode(forcedMode);
+        return;
+      }
+
       const role = ext.viewer?.role;
       setMode(role === 'broadcaster' ? 'config' : 'viewer');
     });
-  }, []);
+  }, [forcedMode]);
 
   useEffect(() => {
     let cancelled = false;
