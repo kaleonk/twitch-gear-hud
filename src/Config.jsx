@@ -1,8 +1,9 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowDown } from 'lucide-react';
 import { initialGearData } from './data';
+import { DEFAULT_THEME, THEME_OPTIONS } from './themes';
 
-const Config = ({ gear, setGear, isPro, setIsPro, currency, setCurrency, channelId, onSave }) => {
+const Config = ({ gear, setGear, theme, setTheme, currency, setCurrency, channelId, onSave }) => {
   const [selectedId, setSelectedId] = useState(gear[0]?.id ?? 1);
   const [localGear, setLocalGear] = useState(gear);
 
@@ -24,17 +25,17 @@ const Config = ({ gear, setGear, isPro, setIsPro, currency, setCurrency, channel
 
   const handleSaveCard = async () => {
     setGear(localGear);
-    const result = await onSave(localGear, isPro, currency);
+    const result = await onSave(localGear, theme, currency);
     alert(result.message);
   };
 
   const handleResetAll = async () => {
     setLocalGear(initialGearData);
     setGear(initialGearData);
-    setIsPro(false);
+    setTheme(DEFAULT_THEME);
     setCurrency('INR');
     setSelectedId(initialGearData[0].id);
-    const result = await onSave(initialGearData, false, 'INR');
+    const result = await onSave(initialGearData, DEFAULT_THEME, 'INR');
     alert(result.message);
   };
 
@@ -49,18 +50,19 @@ const Config = ({ gear, setGear, isPro, setIsPro, currency, setCurrency, channel
         <div className="text-sm text-[#46557a]">Channel: {channelId}</div>
       </div>
 
-      <div className="mb-3 flex items-center gap-3 rounded-lg border border-[#c7cad1] bg-[#f9fafc] px-3 py-2">
-        <span className="text-sm text-[#273653]">Theme</span>
-        <span className={`text-sm ${!isPro ? 'font-semibold text-[#0f172a]' : 'text-[#5c6a87]'}`}>Free</span>
-        <button
-          type="button"
-          onClick={() => setIsPro(!isPro)}
-          className={`relative h-6 w-12 rounded-full border transition-colors ${isPro ? 'border-[#2de6ff] bg-[#113846]' : 'border-[#aeb6cb] bg-[#d7dce8]'}`}
-          aria-label="Toggle Pro"
+      <div className="mb-3 grid items-center gap-2 sm:grid-cols-[88px_1fr]">
+        <label className="text-[24px] text-[#273653] sm:text-base">Theme</label>
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[28px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
         >
-          <span className={`absolute top-[2px] h-4 w-4 rounded-full bg-white transition-all ${isPro ? 'left-7' : 'left-1'}`} />
-        </button>
-        <span className={`text-sm ${isPro ? 'font-semibold text-[#0f172a]' : 'text-[#5c6a87]'}`}>Pro</span>
+          {THEME_OPTIONS.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[88px_1fr]">
@@ -159,7 +161,7 @@ const Config = ({ gear, setGear, isPro, setIsPro, currency, setCurrency, channel
       </div>
 
       <div className="mt-3 border-t border-[#c7cad1] pt-3 text-sm text-[#475569]">
-        Free tier: links use fallback if blank. Pro ($9/mo): neon themes + custom AI backgrounds.
+        Choose a theme style for your panel. Links use fallback if affiliate URL is blank.
       </div>
     </div>
   );

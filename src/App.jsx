@@ -9,6 +9,7 @@ import {
   TWITCH_EXTENSION_VERSION,
 } from './constants';
 import { isSupabaseConfigured, supabase } from './supabaseClient';
+import { DEFAULT_THEME, isValidTheme } from './themes';
 
 function App() {
   const forcedMode = useMemo(() => {
@@ -21,7 +22,7 @@ function App() {
   const [mode, setMode] = useState(forcedMode ?? 'viewer');
   const [channelId, setChannelId] = useState(FALLBACK_CHANNEL_ID);
   const [gear, setGear] = useState(initialGearData);
-  const [isPro, setIsPro] = useState(false);
+  const [theme, setTheme] = useState(DEFAULT_THEME);
   const [currency, setCurrency] = useState('INR');
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
@@ -69,6 +70,7 @@ function App() {
         if (!cancelled && data) {
           let nextGear = initialGearData;
           let nextCurrency = 'INR';
+          let nextTheme = DEFAULT_THEME;
 
           if (Array.isArray(data.gear_data)) {
             nextGear = data.gear_data;
@@ -82,13 +84,20 @@ function App() {
             } else if (['INR', 'USD', 'EU'].includes(data.gear_data.currency)) {
               nextCurrency = data.gear_data.currency;
             }
+
+            if (isValidTheme(data.gear_data.theme)) {
+              nextTheme = data.gear_data.theme;
+            }
           }
 
-          const nextIsPro = Boolean(data.is_pro);
+          if (!isValidTheme(nextTheme) && Boolean(data.is_pro)) {
+            nextTheme = 'neon';
+          }
+
           setGear(nextGear);
-          setIsPro(nextIsPro);
+          setTheme(nextTheme);
           setCurrency(nextCurrency);
-          window.localStorage.setItem(storageKey, JSON.stringify({ gear: nextGear, isPro: nextIsPro, currency: nextCurrency }));
+          window.localStorage.setItem(storageKey, JSON.stringify({ gear: nextGear, theme: nextTheme, currency: nextCurrency }));
           setIsLoadingConfig(false);
           return;
         }
@@ -101,7 +110,7 @@ function App() {
       const saved = window.localStorage.getItem(storageKey);
       if (!saved) {
         setGear(initialGearData);
-        setIsPro(false);
+        setTheme(DEFAULT_THEME);
         setCurrency('INR');
         setIsLoadingConfig(false);
         return;
@@ -110,7 +119,13 @@ function App() {
       try {
         const parsed = JSON.parse(saved);
         setGear(Array.isArray(parsed.gear) ? parsed.gear : initialGearData);
-        setIsPro(Boolean(parsed.isPro));
+        if (isValidTheme(parsed.theme)) {
+          setTheme(parsed.theme);
+        } else if (parsed.isPro) {
+          setTheme('neon');
+        } else {
+          setTheme(DEFAULT_THEME);
+        }
         if (parsed.currency === 'EUR') {
           setCurrency('EU');
         } else {
@@ -118,7 +133,7 @@ function App() {
         }
       } catch {
         setGear(initialGearData);
-        setIsPro(false);
+        setTheme(DEFAULT_THEME);
         setCurrency('INR');
       }
 
@@ -132,15 +147,15 @@ function App() {
     };
   }, [channelId, storageKey]);
 
-  const persistConfig = async (nextGear, nextIsPro, nextCurrency) => {
+  const persistConfig = async (nextGear, nextTheme, nextCurrency) => {
     const payloadGear = Array.isArray(nextGear) ? nextGear : gear;
-    const payloadIsPro = typeof nextIsPro === 'boolean' ? nextIsPro : isPro;
+    const payloadTheme = isValidTheme(nextTheme) ? nextTheme : theme;
     const payloadCurrency = ['INR', 'USD', 'EU'].includes(nextCurrency) ? nextCurrency : currency;
 
     setGear(payloadGear);
-    setIsPro(payloadIsPro);
+    setTheme(payloadTheme);
     setCurrency(payloadCurrency);
-    window.localStorage.setItem(storageKey, JSON.stringify({ gear: payloadGear, isPro: payloadIsPro, currency: payloadCurrency }));
+    window.localStorage.setItem(storageKey, JSON.stringify({ gear: payloadGear, theme: payloadTheme, currency: payloadCurrency }));
 
     if (!supabase) {
       return { ok: true, message: 'Saved locally (.env not configured yet).' };
@@ -151,8 +166,8 @@ function App() {
       .upsert(
         {
           streamer_id: String(channelId),
-          gear_data: { items: payloadGear, currency: payloadCurrency },
-          is_pro: payloadIsPro,
+          gear_data: { items: payloadGear, currency: payloadCurrency, theme: payloadTheme },
+          is_pro: payloadTheme !== 'midnight',
         },
         { onConflict: 'streamer_id' }
       );
@@ -194,18 +209,16 @@ function App() {
       ) : mode === 'viewer' ? (
         <Viewer
           gear={gear}
-          isPro={isPro}
-          setIsPro={setIsPro}
+          theme={theme}
           channelId={channelId}
           currency={currency}
-          canTogglePro={!isExtensionEnv}
         />
       ) : (
         <Config
           gear={gear}
           setGear={setGear}
-          isPro={isPro}
-          setIsPro={setIsPro}
+          theme={theme}
+          setTheme={setTheme}
           currency={currency}
           setCurrency={setCurrency}
           channelId={channelId}
