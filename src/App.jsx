@@ -11,6 +11,20 @@ import {
 import { isSupabaseConfigured, supabase } from './supabaseClient';
 import { DEFAULT_THEME, isValidTheme } from './themes';
 
+const normalizeSettings = (raw) => {
+  const showRaw = raw?.showCta;
+  const showCta =
+    showRaw === false ||
+    showRaw === 'false' ||
+    showRaw === 0 ||
+    showRaw === '0'
+      ? false
+      : true;
+
+  const ctaLabel = String(raw?.ctaLabel || 'Buy Now').trim().slice(0, 20) || 'Buy Now';
+  return { showCta, ctaLabel };
+};
+
 function App() {
   const forcedMode = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
@@ -24,6 +38,8 @@ function App() {
   const [gear, setGear] = useState(initialGearData);
   const [theme, setTheme] = useState(DEFAULT_THEME);
   const [currency, setCurrency] = useState('INR');
+  const [profile, setProfile] = useState({ twitchUsername: '' });
+  const [panelSettings, setPanelSettings] = useState(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
   const storageKey = useMemo(() => `gearhud:${channelId}`, [channelId]);
@@ -38,6 +54,10 @@ function App() {
       setIsExtensionEnv(true);
       if (auth?.channelId) {
         setChannelId(auth.channelId);
+      }
+
+      if (ext.viewer?.login) {
+        setProfile((prev) => (prev.twitchUsername ? prev : { twitchUsername: ext.viewer.login }));
       }
 
       if (forcedMode) {
@@ -71,6 +91,8 @@ function App() {
           let nextGear = initialGearData;
           let nextCurrency = 'INR';
           let nextTheme = DEFAULT_THEME;
+          let nextProfile = { twitchUsername: '' };
+          let nextSettings = normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' });
 
           if (Array.isArray(data.gear_data)) {
             nextGear = data.gear_data;
@@ -88,16 +110,39 @@ function App() {
             if (isValidTheme(data.gear_data.theme)) {
               nextTheme = data.gear_data.theme;
             }
+
+            if (data.gear_data.profile?.twitchUsername) {
+              nextProfile = { twitchUsername: data.gear_data.profile.twitchUsername };
+            }
+
+            if (data.gear_data.settings && typeof data.gear_data.settings === 'object') {
+              nextSettings = normalizeSettings(data.gear_data.settings);
+            }
           }
 
           if (!isValidTheme(nextTheme) && Boolean(data.is_pro)) {
             nextTheme = 'neon';
           }
 
+          if (!nextProfile.twitchUsername && window.Twitch?.ext?.viewer?.login) {
+            nextProfile = { twitchUsername: window.Twitch.ext.viewer.login };
+          }
+
           setGear(nextGear);
           setTheme(nextTheme);
           setCurrency(nextCurrency);
-          window.localStorage.setItem(storageKey, JSON.stringify({ gear: nextGear, theme: nextTheme, currency: nextCurrency }));
+          setProfile(nextProfile);
+          setPanelSettings(nextSettings);
+          window.localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+              gear: nextGear,
+              theme: nextTheme,
+              currency: nextCurrency,
+              profile: nextProfile,
+              settings: nextSettings,
+            })
+          );
           setIsLoadingConfig(false);
           return;
         }
@@ -112,6 +157,8 @@ function App() {
         setGear(initialGearData);
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
+        setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
+        setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
         setIsLoadingConfig(false);
         return;
       }
@@ -126,15 +173,30 @@ function App() {
         } else {
           setTheme(DEFAULT_THEME);
         }
+
         if (parsed.currency === 'EUR') {
           setCurrency('EU');
         } else {
           setCurrency(['INR', 'USD', 'EU'].includes(parsed.currency) ? parsed.currency : 'INR');
         }
+
+        if (parsed.profile?.twitchUsername) {
+          setProfile({ twitchUsername: parsed.profile.twitchUsername });
+        } else {
+          setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
+        }
+
+        if (parsed.settings && typeof parsed.settings === 'object') {
+          setPanelSettings(normalizeSettings(parsed.settings));
+        } else {
+          setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
+        }
       } catch {
         setGear(initialGearData);
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
+        setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
+        setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
       }
 
       setIsLoadingConfig(false);
@@ -147,15 +209,31 @@ function App() {
     };
   }, [channelId, storageKey]);
 
-  const persistConfig = async (nextGear, nextTheme, nextCurrency) => {
+  const persistConfig = async (nextGear, nextTheme, nextCurrency, nextProfile, nextSettings) => {
     const payloadGear = Array.isArray(nextGear) ? nextGear : gear;
     const payloadTheme = isValidTheme(nextTheme) ? nextTheme : theme;
     const payloadCurrency = ['INR', 'USD', 'EU'].includes(nextCurrency) ? nextCurrency : currency;
+    const payloadProfile = {
+      twitchUsername: nextProfile?.twitchUsername || profile.twitchUsername || '',
+    };
+    const payloadSettings = normalizeSettings(nextSettings || panelSettings);
 
     setGear(payloadGear);
     setTheme(payloadTheme);
     setCurrency(payloadCurrency);
-    window.localStorage.setItem(storageKey, JSON.stringify({ gear: payloadGear, theme: payloadTheme, currency: payloadCurrency }));
+    setProfile(payloadProfile);
+    setPanelSettings(payloadSettings);
+
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        gear: payloadGear,
+        theme: payloadTheme,
+        currency: payloadCurrency,
+        profile: payloadProfile,
+        settings: payloadSettings,
+      })
+    );
 
     if (!supabase) {
       return { ok: true, message: 'Saved locally (.env not configured yet).' };
@@ -166,7 +244,13 @@ function App() {
       .upsert(
         {
           streamer_id: String(channelId),
-          gear_data: { items: payloadGear, currency: payloadCurrency, theme: payloadTheme },
+          gear_data: {
+            items: payloadGear,
+            currency: payloadCurrency,
+            theme: payloadTheme,
+            profile: payloadProfile,
+            settings: payloadSettings,
+          },
           is_pro: payloadTheme !== 'midnight',
         },
         { onConflict: 'streamer_id' }
@@ -212,6 +296,8 @@ function App() {
           theme={theme}
           channelId={channelId}
           currency={currency}
+          profile={profile}
+          settings={panelSettings}
         />
       ) : (
         <Config
@@ -221,14 +307,20 @@ function App() {
           setTheme={setTheme}
           currency={currency}
           setCurrency={setCurrency}
+          profile={profile}
+          setProfile={setProfile}
+          settings={panelSettings}
+          setSettings={setPanelSettings}
           channelId={channelId}
           onSave={persistConfig}
         />
       )}
 
-      <div className="mx-auto mt-3 w-[min(92vw,980px)] text-right text-xs text-slate-500">
-        client: {TWITCH_EXTENSION_CLIENT_ID} · channel: {channelId} · v{TWITCH_EXTENSION_VERSION} · {isSupabaseConfigured ? 'supabase:on' : 'supabase:off'}
-      </div>
+      {!isExtensionEnv ? (
+        <div className="mx-auto mt-3 w-[min(92vw,980px)] text-right text-xs text-slate-500">
+          client: {TWITCH_EXTENSION_CLIENT_ID} · channel: {channelId} · v{TWITCH_EXTENSION_VERSION} · {isSupabaseConfigured ? 'supabase:on' : 'supabase:off'}
+        </div>
+      ) : null}
     </div>
   );
 }

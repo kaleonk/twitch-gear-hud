@@ -85,50 +85,63 @@ const formatPrice = (value, currency) => {
   }).format(numeric);
 };
 
-const Viewer = ({ gear, theme, channelId, currency }) => {
+const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
   const styles = themeStyles[theme] || themeStyles.midnight;
+  const username = (profile?.twitchUsername || '').trim();
+  const showCta = settings?.showCta !== false;
+  const ctaLabel = (settings?.ctaLabel || 'Buy Now').trim() || 'Buy Now';
 
   return (
-    <div className={`w-full rounded-xl border px-3 py-3 shadow-[0_10px_26px_rgba(2,4,12,0.45)] ${styles.shell}`}>
+    <div className={`mx-auto w-full max-w-[1100px] rounded-xl border px-2.5 py-2.5 shadow-[0_10px_26px_rgba(2,4,12,0.45)] md:px-5 md:py-5 ${styles.shell}`}>
       <div className="mb-3 flex items-start justify-between gap-2">
-        <h2 className={`text-base font-semibold tracking-[0.08em] ${styles.title}`}>SETUP · CHANNEL {channelId}</h2>
-        <span className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${styles.badge}`}>
+        <h2 className={`text-[13px] font-semibold tracking-[0.08em] md:text-xl ${styles.title}`}>
+          SETUP · {username ? `@${username}` : `CHANNEL ${channelId}`}
+        </h2>
+        <span className={`rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] md:text-[10px] ${styles.badge}`}>
           {theme}
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-2">
-        {gear.map((item) => {
-          const Icon = iconByType[item.type.toLowerCase()] || Monitor;
-          const finalLink = item.link && item.link.length > 5 ? item.link : FALLBACK_AFFILIATE_LINK;
+      {gear.length === 0 ? (
+        <div className={`rounded-xl border p-6 text-center text-sm ${styles.card}`}>
+          No items shared yet.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3 md:gap-3">
+          {gear.map((item) => {
+            const Icon = iconByType[String(item.type || '').toLowerCase()] || Monitor;
+            const finalLink = item.link && item.link.length > 5 ? item.link : FALLBACK_AFFILIATE_LINK;
 
-          return (
-            <article
-              key={item.id}
-              className={`rounded-xl border p-3 transition-all ${styles.card} ${styles.cardGlow}`}
-            >
-              <div className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-lg border ${styles.icon}`}>
-                <Icon size={16} />
-              </div>
-
-              <h3 className="mb-1 text-3xl font-semibold leading-none text-white">{item.name || item.type}</h3>
-              <p className={`min-h-[24px] text-xl ${styles.spec}`}>{item.specs}</p>
-              <p className={`mb-2 mt-1 text-3xl font-medium ${styles.price}`}>{formatPrice(item.price, currency)}</p>
-
-              <a
-                href={finalLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-3 text-2xl font-semibold transition ${styles.button}`}
+            return (
+              <article
+                key={item.id}
+                className={`rounded-xl border p-2.5 transition-all md:p-4 ${styles.card} ${styles.cardGlow}`}
               >
-                Buy Now <ArrowRight size={16} />
-              </a>
-            </article>
-          );
-        })}
-      </div>
+                <div className={`mb-1.5 inline-flex h-7 w-7 items-center justify-center rounded-lg border md:h-9 md:w-9 ${styles.icon}`}>
+                  <Icon size={14} />
+                </div>
 
-      <p className={`mt-3 text-center text-[11px] ${styles.footer}`}>Powered by GearHUD · links may earn commission</p>
+                <h3 className="mb-1 text-[18px] font-semibold leading-tight text-white md:text-3xl">{item.name || item.type}</h3>
+                <p className={`min-h-[18px] text-[11px] leading-snug md:text-lg ${styles.spec}`}>{item.specs}</p>
+                <p className={`mb-1.5 mt-1 text-[17px] font-semibold md:text-3xl ${styles.price}`}>{formatPrice(item.price, currency)}</p>
+
+                {showCta ? (
+                  <a
+                    href={finalLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex w-full items-center justify-center gap-2 rounded-lg border px-2 py-2 text-[12px] font-semibold transition md:px-3 md:py-3 md:text-xl ${styles.button}`}
+                  >
+                    {ctaLabel} <ArrowRight size={16} />
+                  </a>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      <p className={`mt-2 text-center text-[9px] md:text-[11px] ${styles.footer}`}>Powered by GearHUD · links may earn commission</p>
     </div>
   );
 };
