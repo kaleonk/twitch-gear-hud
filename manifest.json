@@ -18,7 +18,7 @@
     }
   },
   "content_security_policy": {
-    "extension_policies": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://*.supabase.co; font-src 'self'; object-src 'none'; frame-src 'none'",
+    "extension_policies": "default-src 'self'; script-src 'self' https://extension-files.twitch.tv; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://*.supabase.co; font-src 'self'; object-src 'none'; frame-src 'none'",
     "sandbox_policies": "allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"
   },
   "allowlist": [
