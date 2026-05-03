@@ -68,6 +68,30 @@ const themeStyles = {
     button: 'border-[#54a87c] bg-[#244d38] text-[#c4f2d7] hover:border-[#8de0b4] hover:bg-[#2b6346] hover:text-white',
     footer: 'text-[#92c9a9]',
   },
+  ember: {
+    shell: 'border-[#7a2e2e] bg-[radial-gradient(circle_at_top,#4c1419_0%,#2a1017_50%,#160b12_100%)] text-[#ffc1b5]',
+    title: 'text-[#ffb28f]',
+    badge: 'bg-[#5a1f1f] text-[#ffd0ba] border-[#cc6a48]',
+    card: 'border-[#934744] bg-[#2b1319]',
+    cardGlow: 'shadow-[0_0_14px_rgba(255,129,84,0.22)]',
+    icon: 'border-[#b05c57] bg-[#3a1d22] text-[#ffe0d5]',
+    spec: 'text-[#f4b8aa]',
+    price: 'text-[#ffbb8f]',
+    button: 'border-[#da7a56] bg-[#5c2a2a] text-[#ffe1cf] hover:border-[#ffb18a] hover:bg-[#753636] hover:text-white',
+    footer: 'text-[#d29a8c]',
+  },
+  frost: {
+    shell: 'border-[#2a5f7f] bg-[radial-gradient(circle_at_top,#0d2f4a_0%,#0a1e33_48%,#071624_100%)] text-[#bce8ff]',
+    title: 'text-[#9edfff]',
+    badge: 'bg-[#154768] text-[#cdefff] border-[#58b9ff]',
+    card: 'border-[#2f6d9a] bg-[#10253c]',
+    cardGlow: 'shadow-[0_0_14px_rgba(108,198,255,0.24)]',
+    icon: 'border-[#4b91c0] bg-[#183756] text-[#d9f3ff]',
+    spec: 'text-[#a7d9f5]',
+    price: 'text-[#8ed8ff]',
+    button: 'border-[#5eb8ed] bg-[#234d74] text-[#d3f0ff] hover:border-[#99dbff] hover:bg-[#2d6494] hover:text-white',
+    footer: 'text-[#90c3de]',
+  },
 };
 
 const formatPrice = (value, currency) => {
@@ -90,9 +114,46 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
   const username = (profile?.twitchUsername || '').trim();
   const showCta = settings?.showCta !== false;
   const ctaLabel = (settings?.ctaLabel || 'Buy Now').trim() || 'Buy Now';
+  const showImages = settings?.showImages !== false;
+  const textScale = settings?.textScale || 'md';
+  const lineHeight = settings?.lineHeight || 'normal';
+  const panelHeight = [300, 400, 500].includes(Number(settings?.panelHeight)) ? Number(settings.panelHeight) : 400;
+
+  const scaleClasses = {
+    sm: {
+      title: 'text-[16px] md:text-2xl',
+      spec: 'text-[10px] md:text-base',
+      price: 'text-[15px] md:text-2xl',
+      button: 'text-[11px] md:text-lg',
+    },
+    md: {
+      title: 'text-[18px] md:text-3xl',
+      spec: 'text-[11px] md:text-lg',
+      price: 'text-[17px] md:text-3xl',
+      button: 'text-[12px] md:text-xl',
+    },
+    lg: {
+      title: 'text-[20px] md:text-[34px]',
+      spec: 'text-[12px] md:text-xl',
+      price: 'text-[19px] md:text-[34px]',
+      button: 'text-[13px] md:text-2xl',
+    },
+    xl: {
+      title: 'text-[22px] md:text-[38px]',
+      spec: 'text-[13px] md:text-2xl',
+      price: 'text-[21px] md:text-[38px]',
+      button: 'text-[14px] md:text-[26px]',
+    },
+  };
+
+  const leadingClass = lineHeight === 'tight' ? 'leading-tight' : lineHeight === 'relaxed' ? 'leading-relaxed' : 'leading-snug';
+  const activeScale = scaleClasses[textScale] || scaleClasses.md;
 
   return (
-    <div className={`mx-auto w-full max-w-[1100px] rounded-xl border px-2.5 py-2.5 shadow-[0_10px_26px_rgba(2,4,12,0.45)] md:px-5 md:py-5 ${styles.shell}`}>
+    <div
+      className={`mx-auto w-full max-w-[1100px] rounded-xl border px-2.5 py-2.5 font-['Rajdhani','Segoe_UI',sans-serif] shadow-[0_10px_26px_rgba(2,4,12,0.45)] md:px-5 md:py-5 ${styles.shell}`}
+      style={{ minHeight: `${panelHeight}px` }}
+    >
       <div className="mb-3 flex items-start justify-between gap-2">
         <h2 className={`text-[13px] font-semibold tracking-[0.08em] md:text-xl ${styles.title}`}>
           SETUP · {username ? `@${username}` : `CHANNEL ${channelId}`}
@@ -115,26 +176,46 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
             return (
               <article
                 key={item.id}
-                className={`rounded-xl border p-2.5 transition-all md:p-4 ${styles.card} ${styles.cardGlow}`}
+                className={`relative overflow-hidden rounded-xl border p-2.5 transition-all md:p-4 ${styles.card} ${styles.cardGlow}`}
               >
+                {showImages && item.image ? (
+                  <>
+                    <div
+                      className="absolute inset-0 bg-cover bg-center opacity-35"
+                      style={{ backgroundImage: `url('${item.image}')` }}
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(2,8,23,0.92)_0%,rgba(2,8,23,0.7)_45%,rgba(2,8,23,0.85)_100%)]" />
+                  </>
+                ) : null}
+
+                <div className="relative z-10">
                 <div className={`mb-1.5 inline-flex h-7 w-7 items-center justify-center rounded-lg border md:h-9 md:w-9 ${styles.icon}`}>
                   <Icon size={14} />
                 </div>
 
-                <h3 className="mb-1 text-[18px] font-semibold leading-tight text-white md:text-3xl">{item.name || item.type}</h3>
-                <p className={`min-h-[18px] text-[11px] leading-snug md:text-lg ${styles.spec}`}>{item.specs}</p>
-                <p className={`mb-1.5 mt-1 text-[17px] font-semibold md:text-3xl ${styles.price}`}>{formatPrice(item.price, currency)}</p>
+                <h3 className={`mb-1 font-semibold text-white ${activeScale.title} ${leadingClass}`}>{item.name || item.type}</h3>
+                <p className={`${activeScale.spec} min-h-[18px] ${styles.spec} ${leadingClass}`}>{item.specs}</p>
 
                 {showCta ? (
-                  <a
-                    href={finalLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`inline-flex w-full items-center justify-center gap-2 rounded-lg border px-2 py-2 text-[12px] font-semibold transition md:px-3 md:py-3 md:text-xl ${styles.button}`}
-                  >
-                    {ctaLabel} <ArrowRight size={16} />
-                  </a>
+                  <p className={`mb-1.5 mt-1 font-semibold ${activeScale.price} ${styles.price} ${leadingClass}`}>
+                    {formatPrice(item.price, currency)}
+                  </p>
                 ) : null}
+
+                {showCta ? (
+                  <>
+                    <a
+                      href={finalLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex w-full items-center justify-center gap-2 rounded-lg border px-2 py-2 font-semibold transition md:px-3 md:py-3 ${activeScale.button} ${styles.button}`}
+                    >
+                      {ctaLabel} <ArrowRight size={16} />
+                    </a>
+                    <p className="mt-1 text-center text-[8px] opacity-60 md:text-[10px]">Amazon affiliate link</p>
+                  </>
+                ) : null}
+                </div>
               </article>
             );
           })}

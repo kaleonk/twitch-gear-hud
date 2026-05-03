@@ -1,0 +1,28 @@
+{
+  "name": "GearHUD",
+  "description": "Show your streaming setup gear on your Twitch channel.",
+  "version": "1.0.0",
+  "author": "",
+  "icon": {
+    "24": "public/favicon.svg",
+    "100": "public/favicon.svg"
+  },
+  "capabilities": {
+    "panel": {
+      "viewer_url": "index.html",
+      "height": 400,
+      "can_link_external_content": false
+    },
+    "config": {
+      "config_url": "index.html"
+    }
+  },
+  "content_security_policy": {
+    "extension_policies": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://*.supabase.co; font-src 'self'; object-src 'none'; frame-src 'none'",
+    "sandbox_policies": "allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"
+  },
+  "allowlist": [
+    "amazon.com",
+    "amzn.to"
+  ]
+}

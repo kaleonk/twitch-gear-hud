@@ -4,6 +4,7 @@ import { initialGearData } from './data';
 import { DEFAULT_THEME, THEME_OPTIONS } from './themes';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,25}$/;
+const AMAZON_LINK_REGEX = /^https?:\/\/(www\.)?(amazon\.(com|co\.uk|co\.jp|de|fr|it|es|ca|com\.au|com\.br|com\.mx|in|nl|se|sg|ae|com\.tr)|amzn\.to)\//i;
 
 const Config = ({
   gear,
@@ -21,7 +22,9 @@ const Config = ({
 }) => {
   const [selectedId, setSelectedId] = useState(gear[0]?.id ?? 1);
   const [localGear, setLocalGear] = useState(gear);
-  const [localSettings, setLocalSettings] = useState(settings || { showCta: true, ctaLabel: 'Buy Now' });
+  const [localSettings, setLocalSettings] = useState(
+    settings || { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 }
+  );
 
   useEffect(() => {
     setLocalGear(gear);
@@ -29,7 +32,9 @@ const Config = ({
   }, [gear]);
 
   useEffect(() => {
-    setLocalSettings(settings || { showCta: true, ctaLabel: 'Buy Now' });
+    setLocalSettings(
+      settings || { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 }
+    );
   }, [settings]);
 
   const selectedCard = useMemo(
@@ -52,6 +57,7 @@ const Config = ({
       specs: 'Add details',
       price: '0',
       link: '',
+      image: '',
     };
     const updated = [...localGear, newItem];
     setLocalGear(updated);
@@ -88,11 +94,11 @@ const Config = ({
     setGear(initialGearData);
     setTheme(DEFAULT_THEME);
     setCurrency('INR');
-    setSettings({ showCta: true, ctaLabel: 'Buy Now' });
+    setSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     setSelectedId(initialGearData[0].id);
     const result = await onSave(initialGearData, DEFAULT_THEME, 'INR', {
       twitchUsername: (profile.twitchUsername || '').toLowerCase(),
-    }, { showCta: true, ctaLabel: 'Buy Now' });
+    }, { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     alert(result.message);
   };
 
@@ -173,6 +179,64 @@ const Config = ({
         />
       </div>
 
+      <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
+        <label className="text-[24px] text-[#273653] sm:text-base">Show Images</label>
+        <div className="flex items-center gap-3 rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2">
+          <input
+            id="show-images"
+            type="checkbox"
+            checked={localSettings?.showImages !== false}
+            onChange={(e) =>
+              setLocalSettings((prev) => ({ ...prev, showImages: e.target.checked }))
+            }
+            className="h-5 w-5"
+          />
+          <label htmlFor="show-images" className="text-[20px] text-[#0f172a] sm:text-base">
+            Display image backgrounds on cards
+          </label>
+        </div>
+      </div>
+
+      <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
+        <label className="text-[24px] text-[#273653] sm:text-base">Text Scale</label>
+        <select
+          value={localSettings?.textScale || 'md'}
+          onChange={(e) => setLocalSettings((prev) => ({ ...prev, textScale: e.target.value }))}
+          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+        >
+          <option value="sm">Small</option>
+          <option value="md">Medium</option>
+          <option value="lg">Large</option>
+          <option value="xl">X-Large</option>
+        </select>
+      </div>
+
+      <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
+        <label className="text-[24px] text-[#273653] sm:text-base">Line Height</label>
+        <select
+          value={localSettings?.lineHeight || 'normal'}
+          onChange={(e) => setLocalSettings((prev) => ({ ...prev, lineHeight: e.target.value }))}
+          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+        >
+          <option value="tight">Tight</option>
+          <option value="normal">Normal</option>
+          <option value="relaxed">Relaxed</option>
+        </select>
+      </div>
+
+      <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
+        <label className="text-[24px] text-[#273653] sm:text-base">Panel Height</label>
+        <select
+          value={Number(localSettings?.panelHeight || 400)}
+          onChange={(e) => setLocalSettings((prev) => ({ ...prev, panelHeight: Number(e.target.value) }))}
+          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+        >
+          <option value={300}>300 px (Compact)</option>
+          <option value={400}>400 px (Balanced)</option>
+          <option value={500}>500 px (Tall)</option>
+        </select>
+      </div>
+
       <div className="mb-3 flex flex-wrap gap-2">
         <button
           type="button"
@@ -250,12 +314,37 @@ const Config = ({
 
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
             <label className="text-[24px] text-[#273653] sm:text-base">Aff. Link</label>
+            <div className="flex flex-col gap-1">
+              <input
+                type="text"
+                value={selectedCard.link}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '' || AMAZON_LINK_REGEX.test(val)) {
+                    updateSelected('link', val);
+                  }
+                }}
+                placeholder="https://amazon.com/dp/… or https://amzn.to/…"
+                className={`w-full rounded-lg border bg-[#f9fafc] px-4 py-2 text-[24px] text-[#4b566e] focus:outline-none sm:text-xl ${
+                  selectedCard.link && !AMAZON_LINK_REGEX.test(selectedCard.link)
+                    ? 'border-red-400 focus:border-red-500'
+                    : 'border-[#c9ccd3] focus:border-[#7b8ecf]'
+                }`}
+              />
+              {selectedCard.link && !AMAZON_LINK_REGEX.test(selectedCard.link) && (
+                <p className="text-xs text-red-500">Only Amazon URLs are allowed (amazon.com, amzn.to, etc.)</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
+            <label className="text-[24px] text-[#273653] sm:text-base">Image URL</label>
             <input
               type="text"
-              value={selectedCard.link}
-              onChange={(e) => updateSelected('link', e.target.value)}
-              placeholder="https://amzn.to/yourlink"
-              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[24px] text-[#4b566e] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+              value={selectedCard.image || ''}
+              onChange={(e) => updateSelected('image', e.target.value)}
+              placeholder="https://... (optional card background)"
+              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[20px] text-[#4b566e] focus:border-[#7b8ecf] focus:outline-none sm:text-lg"
             />
           </div>
         </div>
@@ -291,6 +380,9 @@ const Config = ({
 
       <div className="mt-3 border-t border-[#c7cad1] pt-3 text-sm text-[#475569]">
         Add your Twitch username and remove cards you do not want to show.
+      </div>
+      <div className="mt-1 text-xs text-[#60708f]">
+        Panel height is controlled in Twitch Developer Console (Asset Hosting), not from this page.
       </div>
     </div>
   );
