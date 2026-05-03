@@ -9,6 +9,7 @@ import {
   Mouse,
 } from 'lucide-react';
 import { FALLBACK_AFFILIATE_LINK } from './data';
+const AMAZON_LINK_REGEX = /^https?:\/\/(www\.)?(amazon\.(com|co\.uk|co\.jp|de|fr|it|es|ca|com\.au|com\.br|com\.mx|in|nl|se|sg|ae|com\.tr)|amzn\.to)\//i;
 
 const iconByType = {
   gpu: Gamepad2,
@@ -171,7 +172,8 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3 md:gap-3">
           {gear.map((item) => {
             const Icon = iconByType[String(item.type || '').toLowerCase()] || Monitor;
-            const finalLink = item.link && item.link.length > 5 ? item.link : FALLBACK_AFFILIATE_LINK;
+            const rawLink = String(item.link || '').trim();
+            const finalLink = AMAZON_LINK_REGEX.test(rawLink) ? rawLink : FALLBACK_AFFILIATE_LINK;
 
             return (
               <article

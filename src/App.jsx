@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Viewer from './Viewer';
 import Config from './Config';
-import { initialGearData } from './data';
+import { hydrateGearImages, initialGearData } from './data';
 import { Monitor, User } from 'lucide-react';
 import {
   FALLBACK_CHANNEL_ID,
@@ -168,7 +168,7 @@ function App() {
             nextProfile = { twitchUsername: window.Twitch.ext.viewer.login };
           }
 
-          setGear(nextGear);
+          setGear(hydrateGearImages(nextGear));
           setTheme(nextTheme);
           setCurrency(nextCurrency);
           setProfile(nextProfile);
@@ -176,7 +176,7 @@ function App() {
           window.localStorage.setItem(
             storageKey,
             JSON.stringify({
-              gear: nextGear,
+              gear: hydrateGearImages(nextGear),
               theme: nextTheme,
               currency: nextCurrency,
               profile: nextProfile,
@@ -200,7 +200,7 @@ function App() {
 
       const saved = window.localStorage.getItem(storageKey);
       if (!saved) {
-        setGear(initialGearData);
+        setGear(hydrateGearImages(initialGearData));
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
         setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
@@ -212,7 +212,7 @@ function App() {
 
       try {
         const parsed = JSON.parse(saved);
-        setGear(Array.isArray(parsed.gear) ? parsed.gear : initialGearData);
+        setGear(hydrateGearImages(Array.isArray(parsed.gear) ? parsed.gear : initialGearData));
         if (parsed.theme === 'sunset') {
           setTheme('ember');
         } else if (parsed.theme === 'forest') {
@@ -243,7 +243,7 @@ function App() {
           setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
         }
       } catch {
-        setGear(initialGearData);
+        setGear(hydrateGearImages(initialGearData));
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
         setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
@@ -263,7 +263,7 @@ function App() {
   }, [channelId, storageKey]);
 
   const persistConfig = async (nextGear, nextTheme, nextCurrency, nextProfile, nextSettings) => {
-    const payloadGear = Array.isArray(nextGear) ? nextGear : gear;
+    const payloadGear = hydrateGearImages(Array.isArray(nextGear) ? nextGear : gear);
     const payloadTheme = isValidTheme(nextTheme) ? nextTheme : theme;
     const payloadCurrency = ['INR', 'USD', 'EU'].includes(nextCurrency) ? nextCurrency : currency;
     const payloadProfile = {

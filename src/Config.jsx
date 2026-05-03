@@ -77,6 +77,13 @@ const Config = ({
       alert('Please enter a valid Twitch username (letters, numbers, underscore only).');
       return;
     }
+    const invalidLinkCard = localGear.find(
+      (item) => item.link && !AMAZON_LINK_REGEX.test(String(item.link).trim())
+    );
+    if (invalidLinkCard) {
+      alert(`Invalid affiliate link in card "${invalidLinkCard.name || invalidLinkCard.type}". Only Amazon URLs are allowed.`);
+      return;
+    }
 
     setGear(localGear);
     const result = await onSave(
