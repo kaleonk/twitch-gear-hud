@@ -1,8 +1,10 @@
 export const THEME_OPTIONS = [
   { id: 'midnight', label: 'Midnight' },
+  { id: 'ember', label: 'Ember' },
+  { id: 'frost', label: 'Frost' },
   { id: 'neon', label: 'Neon' },
-  { id: 'sunset', label: 'Sunset' },
-  { id: 'forest', label: 'Forest' },
+  { id: 'sunset', label: 'Sunset (Legacy)' },
+  { id: 'forest', label: 'Forest (Legacy)' },
 ];
 
 export const DEFAULT_THEME = 'midnight';

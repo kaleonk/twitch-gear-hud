@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Viewer from './Viewer';
 import Config from './Config';
 import { initialGearData } from './data';
@@ -21,8 +21,20 @@ const normalizeSettings = (raw) => {
       ? false
       : true;
 
+  const showImagesRaw = raw?.showImages;
+  const showImages =
+    showImagesRaw === false ||
+    showImagesRaw === 'false' ||
+    showImagesRaw === 0 ||
+    showImagesRaw === '0'
+      ? false
+      : true;
+
   const ctaLabel = String(raw?.ctaLabel || 'Buy Now').trim().slice(0, 20) || 'Buy Now';
-  return { showCta, ctaLabel };
+  const textScale = ['sm', 'md', 'lg', 'xl'].includes(raw?.textScale) ? raw.textScale : 'md';
+  const lineHeight = ['tight', 'normal', 'relaxed'].includes(raw?.lineHeight) ? raw.lineHeight : 'normal';
+  const panelHeight = [300, 400, 500].includes(Number(raw?.panelHeight)) ? Number(raw.panelHeight) : 400;
+  return { showCta, ctaLabel, showImages, textScale, lineHeight, panelHeight };
 };
 
 function App() {
@@ -43,6 +55,9 @@ function App() {
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
   const storageKey = useMemo(() => `gearhud:${channelId}`, [channelId]);
+  
+  // Ref to track if we've already loaded config to prevent infinite loops
+  const hasLoadedConfig = useRef(false);
 
   useEffect(() => {
     const ext = window.Twitch?.ext;
@@ -71,23 +86,43 @@ function App() {
   }, [forcedMode]);
 
   useEffect(() => {
+    // Prevent reloading if we already have the config for this channel
+    if (hasLoadedConfig.current) return;
+    
     let cancelled = false;
+    let timeoutId;
 
     const loadConfig = async () => {
       setIsLoadingConfig(true);
 
-      if (supabase) {
-        const { data, error } = await supabase
-          .from('gear_configs')
-          .select('gear_data,is_pro')
-          .eq('streamer_id', String(channelId))
-          .maybeSingle();
+      // Wrapper to add timeout to the Supabase fetch
+      const fetchWithTimeout = async () => {
+        if (!supabase) return null;
+        
+        return Promise.race([
+          supabase
+            .from('gear_configs')
+            .select('gear_data,is_pro')
+            .eq('streamer_id', String(channelId))
+            .maybeSingle(),
+          new Promise((_, reject) => 
+            timeoutId = setTimeout(() => reject(new Error('Supabase request timed out')), 5000)
+          )
+        ]);
+      };
 
-        if (!cancelled && error) {
-          console.error('Supabase load error:', error.message);
+      try {
+        const response = await fetchWithTimeout();
+        
+        if (cancelled) return;
+
+        if (response && response.error) {
+           console.error('Supabase load error:', response.error.message);
+           throw response.error; // Force fallback to local storage
         }
 
-        if (!cancelled && data) {
+        if (response && response.data) {
+          const data = response.data;
           let nextGear = initialGearData;
           let nextCurrency = 'INR';
           let nextTheme = DEFAULT_THEME;
@@ -107,8 +142,13 @@ function App() {
               nextCurrency = data.gear_data.currency;
             }
 
-            if (isValidTheme(data.gear_data.theme)) {
-              nextTheme = data.gear_data.theme;
+            const incomingTheme = data.gear_data.theme;
+            if (incomingTheme === 'sunset') {
+              nextTheme = 'ember';
+            } else if (incomingTheme === 'forest') {
+              nextTheme = 'frost';
+            } else if (isValidTheme(incomingTheme)) {
+              nextTheme = incomingTheme;
             }
 
             if (data.gear_data.profile?.twitchUsername) {
@@ -143,14 +183,20 @@ function App() {
               settings: nextSettings,
             })
           );
+          hasLoadedConfig.current = true;
           setIsLoadingConfig(false);
           return;
         }
+      } catch (err) {
+        if (!cancelled) {
+            console.warn('Falling back to local storage due to error:', err.message);
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
 
-      if (cancelled) {
-        return;
-      }
+      // Fallback to Local Storage if Supabase fails, times out, or returns no data
+      if (cancelled) return;
 
       const saved = window.localStorage.getItem(storageKey);
       if (!saved) {
@@ -159,6 +205,7 @@ function App() {
         setCurrency('INR');
         setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
         setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
+        hasLoadedConfig.current = true;
         setIsLoadingConfig(false);
         return;
       }
@@ -166,7 +213,11 @@ function App() {
       try {
         const parsed = JSON.parse(saved);
         setGear(Array.isArray(parsed.gear) ? parsed.gear : initialGearData);
-        if (isValidTheme(parsed.theme)) {
+        if (parsed.theme === 'sunset') {
+          setTheme('ember');
+        } else if (parsed.theme === 'forest') {
+          setTheme('frost');
+        } else if (isValidTheme(parsed.theme)) {
           setTheme(parsed.theme);
         } else if (parsed.isPro) {
           setTheme('neon');
@@ -198,7 +249,8 @@ function App() {
         setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
         setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
       }
-
+      
+      hasLoadedConfig.current = true;
       setIsLoadingConfig(false);
     };
 
@@ -206,6 +258,7 @@ function App() {
 
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [channelId, storageKey]);
 
@@ -286,11 +339,8 @@ function App() {
         </div>
       ) : null}
 
-      {isLoadingConfig ? (
-        <div className="mx-auto mt-20 w-[min(92vw,980px)] rounded-xl border border-slate-300 bg-white p-6 text-center text-slate-700">
-          Loading channel config...
-        </div>
-      ) : mode === 'viewer' ? (
+      {/* Render Logic Updated: Viewer loads immediately, config gets the loader */}
+      {mode === 'viewer' ? (
         <Viewer
           gear={gear}
           theme={theme}
@@ -299,6 +349,10 @@ function App() {
           profile={profile}
           settings={panelSettings}
         />
+      ) : isLoadingConfig ? (
+        <div className="mx-auto mt-20 w-[min(92vw,980px)] rounded-xl border border-slate-300 bg-white p-6 text-center text-slate-700">
+          Loading channel config...
+        </div>
       ) : (
         <Config
           gear={gear}

@@ -1,4 +1,6 @@
-﻿@tailwind base;
+﻿@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -8,5 +10,5 @@
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Oxanium', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
