@@ -79,9 +79,9 @@ function App() {
         setMode(forcedMode);
         return;
       }
-
-      const role = ext.viewer?.role;
-      setMode(role === 'broadcaster' ? 'config' : 'viewer');
+      // In Twitch panel surface we should always render viewer UI.
+      // Config UI is opened via Config Path using ?mode=config.
+      setMode('viewer');
     });
   }, [forcedMode]);
 
