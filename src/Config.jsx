@@ -93,7 +93,7 @@ const Config = ({
       currency,
       {
         twitchUsername: username ? username.toLowerCase() : '',
-        extensionName: (profile.extensionName || 'Gears HUD').trim().slice(0, 32) || 'Gears HUD',
+        extensionName: 'RigBoard',
       },
       localSettings
     );
@@ -107,13 +107,13 @@ const Config = ({
     setCurrency('INR');
     setProfile({
       twitchUsername: (profile.twitchUsername || '').toLowerCase(),
-      extensionName: 'Gears HUD',
+      extensionName: 'RigBoard',
     });
     setSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     setSelectedId(initialGearData[0].id);
     const result = await onSave(initialGearData, DEFAULT_THEME, 'INR', {
       twitchUsername: (profile.twitchUsername || '').toLowerCase(),
-      extensionName: 'Gears HUD',
+      extensionName: 'RigBoard',
     }, { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     alert(result.message);
   };
@@ -144,13 +144,9 @@ const Config = ({
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
         <label className="text-[24px] text-[#9fb5ec] sm:text-base">Extension Name</label>
-        <input
-          type="text"
-          value={profile.extensionName || 'Gears HUD'}
-          onChange={(e) => setProfile((prev) => ({ ...prev, extensionName: e.target.value.slice(0, 32) }))}
-          placeholder="e.g. Gears HUD"
-          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] placeholder:text-[#7288be] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
-        />
+        <div className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] sm:text-xl">
+          RigBoard
+        </div>
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">

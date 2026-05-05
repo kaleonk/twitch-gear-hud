@@ -122,7 +122,7 @@ const formatPrice = (value, currency) => {
 const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
   const styles = themeStyles[theme] || themeStyles.midnight;
   const username = (profile?.twitchUsername || '').trim();
-  const extensionName = (profile?.extensionName || 'Gears HUD').trim();
+  const extensionName = 'RigBoard';
   const showCta = settings?.showCta !== false;
   const ctaLabel = (settings?.ctaLabel || 'Buy Now').trim() || 'Buy Now';
   const showImages = settings?.showImages !== false;
@@ -184,7 +184,7 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
           No items shared yet.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3 md:gap-3">
+        <div className="grid grid-cols-2 gap-2 md:gap-3">
           {gear.map((item) => {
             const Icon = iconByType[String(item.type || '').toLowerCase()] || Monitor;
             const typeKey = String(item.type || '').toLowerCase();
