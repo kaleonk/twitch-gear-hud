@@ -119,11 +119,17 @@ const Config = ({
   };
 
   return (
-    <div className="mx-auto w-[min(92vw,980px)] rounded-2xl border border-[#c6c7c8] bg-[#ecece8] p-5 text-[#0f172a] shadow-sm">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[30px] font-semibold tracking-[0.08em] text-[#24324f] sm:text-2xl">STREAMER CONFIG DASHBOARD</h1>
-        <div className="text-sm text-[#46557a]">Channel ID: {channelId}</div>
+    <div className="mx-auto w-[min(96vw,1360px)] rounded-2xl border border-[#2a3554] bg-[radial-gradient(circle_at_top,#111c3a_0%,#0d1530_46%,#0a1024_100%)] p-4 text-[#d6def8] shadow-[0_18px_44px_rgba(6,10,30,0.45)] sm:p-6">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#2a365c] pb-4">
+        <div>
+          <h1 className="text-[28px] font-semibold tracking-[0.08em] text-[#b8ccff] sm:text-[30px]">STREAMER CONFIG DASHBOARD</h1>
+          <p className="text-xs text-[#7d94cb]">Tune your panel and instantly preview before saving</p>
+        </div>
+        <div className="rounded-lg border border-[#33447a] bg-[#121c3f] px-3 py-1.5 text-sm text-[#9fb5ec]">Channel ID: {channelId}</div>
       </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
+        <div className="rounded-xl border border-[#2c3b66] bg-[#121a36]/90 p-4 sm:p-5">
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
         <label className="text-[24px] text-[#273653] sm:text-base">Twitch Username</label>
@@ -132,27 +138,27 @@ const Config = ({
           value={profile.twitchUsername || ''}
           onChange={(e) => setProfile((prev) => ({ ...prev, twitchUsername: e.target.value }))}
           placeholder="e.g. ur_moon_girl"
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] placeholder:text-[#7288be] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         />
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Extension Name</label>
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Extension Name</label>
         <input
           type="text"
           value={profile.extensionName || 'Gears HUD'}
           onChange={(e) => setProfile((prev) => ({ ...prev, extensionName: e.target.value.slice(0, 32) }))}
           placeholder="e.g. Gears HUD"
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] placeholder:text-[#7288be] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         />
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Theme</label>
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Theme</label>
         <select
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         >
           {THEME_OPTIONS.map((option) => (
             <option key={option.id} value={option.id}>
@@ -163,11 +169,11 @@ const Config = ({
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Currency</label>
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Currency</label>
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         >
           <option value="INR">INR</option>
           <option value="USD">USD</option>
@@ -176,8 +182,8 @@ const Config = ({
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Show Button</label>
-        <div className="flex items-center gap-3 rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2">
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Show Button</label>
+        <div className="flex items-center gap-3 rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2">
           <input
             id="show-cta"
             type="checkbox"
@@ -187,14 +193,14 @@ const Config = ({
             }
             className="h-5 w-5"
           />
-          <label htmlFor="show-cta" className="text-[20px] text-[#0f172a] sm:text-base">
+          <label htmlFor="show-cta" className="text-[20px] text-[#dce7ff] sm:text-base">
             Display action button on cards
           </label>
         </div>
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Button Label</label>
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Button Label</label>
         <input
           type="text"
           value={localSettings?.ctaLabel || 'Buy Now'}
@@ -202,13 +208,13 @@ const Config = ({
             setLocalSettings((prev) => ({ ...prev, ctaLabel: e.target.value.slice(0, 20) }))
           }
           placeholder="Buy Now"
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] placeholder:text-[#7288be] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         />
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Show Images</label>
-        <div className="flex items-center gap-3 rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2">
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Show Images</label>
+        <div className="flex items-center gap-3 rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2">
           <input
             id="show-images"
             type="checkbox"
@@ -218,18 +224,18 @@ const Config = ({
             }
             className="h-5 w-5"
           />
-          <label htmlFor="show-images" className="text-[20px] text-[#0f172a] sm:text-base">
+          <label htmlFor="show-images" className="text-[20px] text-[#dce7ff] sm:text-base">
             Display image backgrounds on cards
           </label>
         </div>
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Text Scale</label>
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Text Scale</label>
         <select
           value={localSettings?.textScale || 'md'}
           onChange={(e) => setLocalSettings((prev) => ({ ...prev, textScale: e.target.value }))}
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         >
           <option value="sm">Small</option>
           <option value="md">Medium</option>
@@ -239,11 +245,11 @@ const Config = ({
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Line Height</label>
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Line Height</label>
         <select
           value={localSettings?.lineHeight || 'normal'}
           onChange={(e) => setLocalSettings((prev) => ({ ...prev, lineHeight: e.target.value }))}
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         >
           <option value="tight">Tight</option>
           <option value="normal">Normal</option>
@@ -252,11 +258,11 @@ const Config = ({
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#273653] sm:text-base">Panel Height</label>
+        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Panel Height</label>
         <select
           value={Number(localSettings?.panelHeight || 400)}
           onChange={(e) => setLocalSettings((prev) => ({ ...prev, panelHeight: Number(e.target.value) }))}
-          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
         >
           <option value={300}>300 px (Compact)</option>
           <option value={400}>400 px (Balanced)</option>
@@ -268,7 +274,7 @@ const Config = ({
         <button
           type="button"
           onClick={addItem}
-          className="inline-flex items-center gap-2 rounded-lg border border-[#9da6b8] bg-white px-4 py-2 text-sm font-semibold text-[#1e293b]"
+          className="inline-flex items-center gap-2 rounded-lg border border-[#4a5f96] bg-[#152146] px-4 py-2 text-sm font-semibold text-[#d8e6ff]"
         >
           <Plus size={16} /> Add Item
         </button>
@@ -276,7 +282,7 @@ const Config = ({
           type="button"
           onClick={deleteSelected}
           disabled={!selectedCard}
-          className="inline-flex items-center gap-2 rounded-lg border border-[#d5a7a7] bg-[#fff4f4] px-4 py-2 text-sm font-semibold text-[#8b1f1f] disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-[#7b3f55] bg-[#331926] px-4 py-2 text-sm font-semibold text-[#ffb6cb] disabled:opacity-50"
         >
           <Trash2 size={16} /> Delete Selected
         </button>
@@ -285,11 +291,11 @@ const Config = ({
       {selectedCard ? (
         <div className="space-y-3">
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#273653] sm:text-base">Card</label>
+            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Card</label>
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(Number(e.target.value))}
-              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[28px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-[22px]"
+              className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[26px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-[22px]"
             >
               {localGear.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -300,47 +306,47 @@ const Config = ({
           </div>
 
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#273653] sm:text-base">Type</label>
+            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Type</label>
             <input
               type="text"
               value={selectedCard.type}
               onChange={(e) => updateSelected('type', e.target.value)}
-              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[28px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-[22px]"
+              className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[26px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-[22px]"
             />
           </div>
 
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#273653] sm:text-base">Name</label>
+            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Name</label>
             <input
               type="text"
               value={selectedCard.name}
               onChange={(e) => updateSelected('name', e.target.value)}
-              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[28px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-[22px]"
+              className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[26px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-[22px]"
             />
           </div>
 
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#273653] sm:text-base">Spec</label>
+            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Spec</label>
             <input
               type="text"
               value={selectedCard.specs}
               onChange={(e) => updateSelected('specs', e.target.value)}
-              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[28px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-[22px]"
+              className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[26px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-[22px]"
             />
           </div>
 
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#273653] sm:text-base">Price</label>
+            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Price</label>
             <input
               type="text"
               value={selectedCard.price}
               onChange={(e) => updateSelected('price', e.target.value)}
-              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[28px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-[22px]"
+              className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[26px] text-[#dce7ff] focus:border-[#57c3ff] focus:outline-none sm:text-[22px]"
             />
           </div>
 
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#273653] sm:text-base">Aff. Link</label>
+            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Aff. Link</label>
             <div className="flex flex-col gap-1">
               <input
                 type="text"
@@ -352,10 +358,10 @@ const Config = ({
                   }
                 }}
                 placeholder="https://amazon.com/dp/… or https://amzn.to/…"
-                className={`w-full rounded-lg border bg-[#f9fafc] px-4 py-2 text-[24px] text-[#4b566e] focus:outline-none sm:text-xl ${
+                className={`w-full rounded-lg border bg-[#0f1730] px-4 py-2 text-[22px] text-[#dce7ff] placeholder:text-[#7288be] focus:outline-none sm:text-xl ${
                   selectedCard.link && !AMAZON_LINK_REGEX.test(selectedCard.link)
                     ? 'border-red-400 focus:border-red-500'
-                    : 'border-[#c9ccd3] focus:border-[#7b8ecf]'
+                    : 'border-[#3a4b79] focus:border-[#57c3ff]'
                 }`}
               />
               {selectedCard.link && !AMAZON_LINK_REGEX.test(selectedCard.link) && (
@@ -365,18 +371,18 @@ const Config = ({
           </div>
 
           <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#273653] sm:text-base">Image URL</label>
+            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Image URL</label>
             <input
               type="text"
               value={selectedCard.image || ''}
               onChange={(e) => updateSelected('image', e.target.value)}
               placeholder="https://... (optional card background)"
-              className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[20px] text-[#4b566e] focus:border-[#7b8ecf] focus:outline-none sm:text-lg"
+              className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[20px] text-[#dce7ff] placeholder:text-[#7288be] focus:border-[#57c3ff] focus:outline-none sm:text-lg"
             />
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-[#a5a7ad] bg-[#f8f8f8] p-4 text-sm text-[#475569]">
+        <div className="rounded-lg border border-dashed border-[#4a5f96] bg-[#101a37] p-4 text-sm text-[#9fb5ec]">
           No items yet. Click `Add Item` to create your first card.
         </div>
       )}
@@ -385,45 +391,51 @@ const Config = ({
         <button
           type="button"
           onClick={handleSaveCard}
-          className="rounded-xl border border-[#adb3bf] bg-[#f6f7f7] px-5 py-2 text-[24px] font-semibold text-[#0f172a] hover:bg-white sm:text-xl"
+          className="rounded-xl border border-[#4a5f96] bg-[#152146] px-5 py-2 text-[24px] font-semibold text-[#d8e6ff] hover:bg-[#1a2a57] sm:text-xl"
         >
           Save Card
         </button>
         <button
           type="button"
           onClick={handleResetAll}
-          className="rounded-xl border border-[#adb3bf] bg-[#f6f7f7] px-5 py-2 text-[24px] font-semibold text-[#0f172a] hover:bg-white sm:text-xl"
+          className="rounded-xl border border-[#4a5f96] bg-[#152146] px-5 py-2 text-[24px] font-semibold text-[#d8e6ff] hover:bg-[#1a2a57] sm:text-xl"
         >
           Reset All
         </button>
         <button
           type="button"
-          className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#c7c9d0] bg-[#f3f4f8] text-[#1e293b]"
+          className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#4a5f96] bg-[#152146] text-[#d8e6ff]"
           aria-label="Scroll"
         >
           <ArrowDown size={18} />
         </button>
       </div>
 
-      <div className="mt-3 border-t border-[#c7cad1] pt-3 text-sm text-[#475569]">
+      <div className="mt-3 border-t border-[#2a365c] pt-3 text-sm text-[#9fb5ec]">
         Add your Twitch username and remove cards you do not want to show.
       </div>
-      <div className="mt-1 text-xs text-[#60708f]">
+      <div className="mt-1 text-xs text-[#7d94cb]">
         Panel height is controlled in Twitch Developer Console (Asset Hosting), not from this page.
       </div>
 
-      <div className="mt-6 rounded-xl border border-[#c7cad1] bg-[#f6f7f8] p-3">
-        <div className="mb-2 text-sm font-semibold text-[#24324f]">Live Preview</div>
-        <div className="mx-auto max-w-[330px]">
-          <Viewer
-            gear={localGear}
-            theme={theme}
-            channelId={channelId}
-            currency={currency}
-            profile={profile}
-            settings={localSettings}
-          />
         </div>
+
+        <aside className="h-fit rounded-xl border border-[#2c3b66] bg-[#101a37]/95 p-3 lg:sticky lg:top-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold tracking-[0.08em] text-[#b8ccff]">LIVE PREVIEW</h3>
+            <span className="rounded-full border border-[#3e5da7] bg-[#162652] px-2 py-0.5 text-[10px] text-[#9fc2ff]">Panel</span>
+          </div>
+          <div className="rounded-xl border border-[#324781] bg-[#0a122a] p-2 shadow-[inset_0_0_0_1px_rgba(87,195,255,0.15),0_12px_26px_rgba(5,10,30,0.45)]">
+            <Viewer
+              gear={localGear}
+              theme={theme}
+              channelId={channelId}
+              currency={currency}
+              profile={profile}
+              settings={localSettings}
+            />
+          </div>
+        </aside>
       </div>
     </div>
   );
