@@ -119,6 +119,30 @@ const formatPrice = (value, currency) => {
   }).format(numeric);
 };
 
+const MAX_ITEMS_FOR_SCORE = 6;
+
+const getSetupScore = (gear, profile) => {
+  const totalItems = Array.isArray(gear) ? gear.length : 0;
+  const itemPoints = Math.min(totalItems, MAX_ITEMS_FOR_SCORE) * (30 / MAX_ITEMS_FOR_SCORE);
+
+  const withImages = gear.filter((item) => String(item.image || '').trim().length > 0).length;
+  const withLinks = gear.filter((item) => AMAZON_LINK_REGEX.test(String(item.link || '').trim())).length;
+  const withPrices = gear.filter((item) => String(item.price || '').trim().length > 0).length;
+
+  const coverageBase = totalItems > 0 ? totalItems : 1;
+  const imagePoints = Math.min(20, (withImages / coverageBase) * 20);
+  const linkPoints = Math.min(20, (withLinks / coverageBase) * 20);
+  const pricePoints = Math.min(20, (withPrices / coverageBase) * 20);
+
+  const hasUsername = String(profile?.twitchUsername || '').trim().length > 0 ? 10 : 0;
+  const score = Math.max(0, Math.min(100, Math.round(itemPoints + imagePoints + linkPoints + pricePoints + hasUsername)));
+
+  if (score <= 40) return { score, tier: 'Budget Build 🥉' };
+  if (score <= 70) return { score, tier: 'Mid-tier Setup 🥈' };
+  if (score <= 90) return { score, tier: 'Pro Rig 🥇' };
+  return { score, tier: 'Absolute Monster 🔥' };
+};
+
 const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
   const styles = themeStyles[theme] || themeStyles.midnight;
   const username = (profile?.twitchUsername || '').trim();
@@ -159,6 +183,7 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
 
   const leadingClass = lineHeight === 'tight' ? 'leading-tight' : lineHeight === 'relaxed' ? 'leading-relaxed' : 'leading-snug';
   const activeScale = scaleClasses[textScale] || scaleClasses.md;
+  const { score, tier } = getSetupScore(gear, profile);
 
   return (
     <div
@@ -177,6 +202,14 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
         <span className={`rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] md:text-[10px] ${styles.badge}`}>
           {theme}
         </span>
+      </div>
+
+      <div className="mb-3 rounded-lg border border-cyan-300/40 bg-cyan-400/10 p-2">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-semibold tracking-[0.08em] text-cyan-100 md:text-xs">SETUP SCORE</p>
+          <p className="text-[16px] font-bold text-cyan-200 md:text-lg">{score}/100</p>
+        </div>
+        <p className="text-[10px] font-semibold text-cyan-100 md:text-xs">{tier}</p>
       </div>
 
       {gear.length === 0 ? (
