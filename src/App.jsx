@@ -12,7 +12,7 @@ import { isSupabaseConfigured, supabase } from './supabaseClient';
 import { DEFAULT_THEME, isValidTheme } from './themes';
 
 const normalizeSettings = (raw) => {
-  const showRaw = raw?.showCta;
+  const showRaw = raw?.showCta ?? raw?.showButton;
   const showCta =
     showRaw === false ||
     showRaw === 'false' ||
@@ -30,7 +30,7 @@ const normalizeSettings = (raw) => {
       ? false
       : true;
 
-  const ctaLabel = String(raw?.ctaLabel || 'Buy Now').trim().slice(0, 20) || 'Buy Now';
+  const ctaLabel = String(raw?.ctaLabel || raw?.buttonLabel || 'Buy Now').trim().slice(0, 20) || 'Buy Now';
   const textScale = ['sm', 'md', 'lg', 'xl'].includes(raw?.textScale) ? raw.textScale : 'md';
   const lineHeight = ['tight', 'normal', 'relaxed'].includes(raw?.lineHeight) ? raw.lineHeight : 'normal';
   const panelHeight = [300, 400, 500].includes(Number(raw?.panelHeight)) ? Number(raw.panelHeight) : 400;
@@ -157,6 +157,16 @@ function App() {
 
             if (data.gear_data.settings && typeof data.gear_data.settings === 'object') {
               nextSettings = normalizeSettings(data.gear_data.settings);
+            } else {
+              // Backward compatibility: some older records stored settings at root.
+              nextSettings = normalizeSettings({
+                showCta: data.gear_data.showCta ?? data.gear_data.showButton,
+                ctaLabel: data.gear_data.ctaLabel ?? data.gear_data.buttonLabel,
+                showImages: data.gear_data.showImages,
+                textScale: data.gear_data.textScale,
+                lineHeight: data.gear_data.lineHeight,
+                panelHeight: data.gear_data.panelHeight,
+              });
             }
           }
 
