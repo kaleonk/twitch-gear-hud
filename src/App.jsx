@@ -22,14 +22,7 @@ const normalizeSettings = (raw) => {
       ? false
       : true;
 
-  const showImagesRaw = raw?.showImages;
-  const showImages =
-    showImagesRaw === false ||
-    showImagesRaw === 'false' ||
-    showImagesRaw === 0 ||
-    showImagesRaw === '0'
-      ? false
-      : true;
+  const showImages = false;
 
   const ctaLabel = String(raw?.ctaLabel || raw?.buttonLabel || 'Buy Now').trim().slice(0, 20) || 'Buy Now';
   const textScale = ['sm', 'md', 'lg', 'xl'].includes(raw?.textScale) ? raw.textScale : 'md';
@@ -52,7 +45,7 @@ function App() {
   const [theme, setTheme] = useState(DEFAULT_THEME);
   const [currency, setCurrency] = useState('INR');
   const [profile, setProfile] = useState({ twitchUsername: '', extensionName: EXTENSION_DISPLAY_NAME });
-  const [panelSettings, setPanelSettings] = useState(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
+  const [panelSettings, setPanelSettings] = useState(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false }));
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
   const storageKey = useMemo(() => `gearhud:${channelId}`, [channelId]);
@@ -132,7 +125,7 @@ function App() {
           let nextCurrency = 'INR';
           let nextTheme = DEFAULT_THEME;
           let nextProfile = { twitchUsername: '', extensionName: EXTENSION_DISPLAY_NAME };
-          let nextSettings = normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' });
+          let nextSettings = normalizeSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false });
 
           if (Array.isArray(data.gear_data)) {
             nextGear = data.gear_data;
@@ -225,7 +218,7 @@ function App() {
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
         setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '', extensionName: EXTENSION_DISPLAY_NAME });
-        setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
+        setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false }));
         hasLoadedConfig.current = true;
         setIsLoadingConfig(false);
         return;
@@ -264,14 +257,14 @@ function App() {
         if (parsed.settings && typeof parsed.settings === 'object') {
           setPanelSettings(normalizeSettings(parsed.settings));
         } else {
-          setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
+          setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false }));
         }
       } catch {
         setGear(hydrateGearImages(initialGearData));
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
         setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '', extensionName: EXTENSION_DISPLAY_NAME });
-        setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
+        setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false }));
       }
       
       hasLoadedConfig.current = true;

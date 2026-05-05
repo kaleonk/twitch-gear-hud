@@ -24,7 +24,7 @@ const Config = ({
   const [selectedId, setSelectedId] = useState(gear[0]?.id ?? 1);
   const [localGear, setLocalGear] = useState(gear);
   const [localSettings, setLocalSettings] = useState(
-    settings || { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 }
+    settings || { showCta: true, ctaLabel: 'Buy Now', showImages: false, textScale: 'md', lineHeight: 'normal', panelHeight: 400 }
   );
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const Config = ({
 
   useEffect(() => {
     setLocalSettings(
-      settings || { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 }
+      settings || { showCta: true, ctaLabel: 'Buy Now', showImages: false, textScale: 'md', lineHeight: 'normal', panelHeight: 400 }
     );
   }, [settings]);
 
@@ -95,7 +95,7 @@ const Config = ({
         twitchUsername: username ? username.toLowerCase() : '',
         extensionName: 'RigBoard',
       },
-      localSettings
+      { ...localSettings, showImages: false }
     );
     alert(result.message);
   };
@@ -109,12 +109,12 @@ const Config = ({
       twitchUsername: (profile.twitchUsername || '').toLowerCase(),
       extensionName: 'RigBoard',
     });
-    setSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
+    setSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     setSelectedId(initialGearData[0].id);
     const result = await onSave(initialGearData, DEFAULT_THEME, 'INR', {
       twitchUsername: (profile.twitchUsername || '').toLowerCase(),
       extensionName: 'RigBoard',
-    }, { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
+    }, { showCta: true, ctaLabel: 'Buy Now', showImages: false, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     alert(result.message);
   };
 
@@ -208,23 +208,6 @@ const Config = ({
         />
       </div>
 
-      <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-        <label className="text-[24px] text-[#9fb5ec] sm:text-base">Show Images</label>
-        <div className="flex items-center gap-3 rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2">
-          <input
-            id="show-images"
-            type="checkbox"
-            checked={localSettings?.showImages !== false}
-            onChange={(e) =>
-              setLocalSettings((prev) => ({ ...prev, showImages: e.target.checked }))
-            }
-            className="h-5 w-5"
-          />
-          <label htmlFor="show-images" className="text-[20px] text-[#dce7ff] sm:text-base">
-            Display image backgrounds on cards
-          </label>
-        </div>
-      </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
         <label className="text-[24px] text-[#9fb5ec] sm:text-base">Text Scale</label>
@@ -361,16 +344,6 @@ const Config = ({
             </div>
           </div>
 
-          <div className="grid items-center gap-2 sm:grid-cols-[180px_1fr]">
-            <label className="text-[24px] text-[#9fb5ec] sm:text-base">Image URL</label>
-            <input
-              type="text"
-              value={selectedCard.image || ''}
-              onChange={(e) => updateSelected('image', e.target.value)}
-              placeholder="https://... (optional card background)"
-              className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[20px] text-[#dce7ff] placeholder:text-[#7288be] focus:border-[#57c3ff] focus:outline-none sm:text-lg"
-            />
-          </div>
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-[#4a5f96] bg-[#101a37] p-4 text-sm text-[#9fb5ec]">
