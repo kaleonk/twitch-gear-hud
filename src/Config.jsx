@@ -5,7 +5,7 @@ import { DEFAULT_THEME, THEME_OPTIONS } from './themes';
 import Viewer from './Viewer';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,25}$/;
-const AMAZON_LINK_REGEX = /^https?:\/\/(www\.)?(amazon\.(com|co\.uk|co\.jp|de|fr|it|es|ca|com\.au|com\.br|com\.mx|in|nl|se|sg|ae|com\.tr)|amzn\.to)\//i;
+const AMAZON_LINK_REGEX = /^https?:\/\/(www\.)?amazon\.com\//i;
 
 const Config = ({
   gear,
@@ -82,7 +82,7 @@ const Config = ({
       (item) => item.link && !AMAZON_LINK_REGEX.test(String(item.link).trim())
     );
     if (invalidLinkCard) {
-      alert(`Invalid affiliate link in card "${invalidLinkCard.name || invalidLinkCard.type}". Only Amazon URLs are allowed.`);
+      alert('Only Amazon.com affiliate links are allowed');
       return;
     }
 
@@ -347,13 +347,8 @@ const Config = ({
               <input
                 type="text"
                 value={selectedCard.link}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === '' || AMAZON_LINK_REGEX.test(val)) {
-                    updateSelected('link', val);
-                  }
-                }}
-                placeholder="https://amazon.com/dp/… or https://amzn.to/…"
+                onChange={(e) => updateSelected('link', e.target.value)}
+                placeholder="https://amazon.com/dp/..."
                 className={`w-full rounded-lg border bg-[#0f1730] px-4 py-2 text-[22px] text-[#dce7ff] placeholder:text-[#7288be] focus:outline-none sm:text-xl ${
                   selectedCard.link && !AMAZON_LINK_REGEX.test(selectedCard.link)
                     ? 'border-red-400 focus:border-red-500'
@@ -361,7 +356,7 @@ const Config = ({
                 }`}
               />
               {selectedCard.link && !AMAZON_LINK_REGEX.test(selectedCard.link) && (
-                <p className="text-xs text-red-500">Only Amazon URLs are allowed (amazon.com, amzn.to, etc.)</p>
+                <p className="text-xs text-red-500">Only Amazon.com affiliate links are allowed</p>
               )}
             </div>
           </div>
