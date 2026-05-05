@@ -2,6 +2,7 @@
 import { ArrowDown, Plus, Trash2 } from 'lucide-react';
 import { initialGearData } from './data';
 import { DEFAULT_THEME, THEME_OPTIONS } from './themes';
+import Viewer from './Viewer';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,25}$/;
 const AMAZON_LINK_REGEX = /^https?:\/\/(www\.)?(amazon\.(com|co\.uk|co\.jp|de|fr|it|es|ca|com\.au|com\.br|com\.mx|in|nl|se|sg|ae|com\.tr)|amzn\.to)\//i;
@@ -73,8 +74,8 @@ const Config = ({
 
   const handleSaveCard = async () => {
     const username = (profile.twitchUsername || '').trim();
-    if (!USERNAME_REGEX.test(username)) {
-      alert('Please enter a valid Twitch username (letters, numbers, underscore only).');
+    if (username && !USERNAME_REGEX.test(username)) {
+      alert('If provided, Twitch username must contain only letters, numbers, or underscore.');
       return;
     }
     const invalidLinkCard = localGear.find(
@@ -90,7 +91,10 @@ const Config = ({
       localGear,
       theme,
       currency,
-      { twitchUsername: username.toLowerCase() },
+      {
+        twitchUsername: username ? username.toLowerCase() : '',
+        extensionName: (profile.extensionName || 'Gears HUD').trim().slice(0, 32) || 'Gears HUD',
+      },
       localSettings
     );
     alert(result.message);
@@ -101,10 +105,15 @@ const Config = ({
     setGear(initialGearData);
     setTheme(DEFAULT_THEME);
     setCurrency('INR');
+    setProfile({
+      twitchUsername: (profile.twitchUsername || '').toLowerCase(),
+      extensionName: 'Gears HUD',
+    });
     setSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     setSelectedId(initialGearData[0].id);
     const result = await onSave(initialGearData, DEFAULT_THEME, 'INR', {
       twitchUsername: (profile.twitchUsername || '').toLowerCase(),
+      extensionName: 'Gears HUD',
     }, { showCta: true, ctaLabel: 'Buy Now', showImages: true, textScale: 'md', lineHeight: 'normal', panelHeight: 400 });
     alert(result.message);
   };
@@ -121,8 +130,19 @@ const Config = ({
         <input
           type="text"
           value={profile.twitchUsername || ''}
-          onChange={(e) => setProfile({ twitchUsername: e.target.value })}
+          onChange={(e) => setProfile((prev) => ({ ...prev, twitchUsername: e.target.value }))}
           placeholder="e.g. ur_moon_girl"
+          className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
+        />
+      </div>
+
+      <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
+        <label className="text-[24px] text-[#273653] sm:text-base">Extension Name</label>
+        <input
+          type="text"
+          value={profile.extensionName || 'Gears HUD'}
+          onChange={(e) => setProfile((prev) => ({ ...prev, extensionName: e.target.value.slice(0, 32) }))}
+          placeholder="e.g. Gears HUD"
           className="w-full rounded-lg border border-[#c9ccd3] bg-[#f9fafc] px-4 py-2 text-[26px] text-[#0f172a] focus:border-[#7b8ecf] focus:outline-none sm:text-xl"
         />
       </div>
@@ -390,6 +410,20 @@ const Config = ({
       </div>
       <div className="mt-1 text-xs text-[#60708f]">
         Panel height is controlled in Twitch Developer Console (Asset Hosting), not from this page.
+      </div>
+
+      <div className="mt-6 rounded-xl border border-[#c7cad1] bg-[#f6f7f8] p-3">
+        <div className="mb-2 text-sm font-semibold text-[#24324f]">Live Preview</div>
+        <div className="mx-auto max-w-[330px]">
+          <Viewer
+            gear={localGear}
+            theme={theme}
+            channelId={channelId}
+            currency={currency}
+            profile={profile}
+            settings={localSettings}
+          />
+        </div>
       </div>
     </div>
   );

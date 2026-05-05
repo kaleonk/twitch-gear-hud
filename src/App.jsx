@@ -50,7 +50,7 @@ function App() {
   const [gear, setGear] = useState(initialGearData);
   const [theme, setTheme] = useState(DEFAULT_THEME);
   const [currency, setCurrency] = useState('INR');
-  const [profile, setProfile] = useState({ twitchUsername: '' });
+  const [profile, setProfile] = useState({ twitchUsername: '', extensionName: 'Gears HUD' });
   const [panelSettings, setPanelSettings] = useState(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
@@ -72,7 +72,11 @@ function App() {
       }
 
       if (ext.viewer?.login) {
-        setProfile((prev) => (prev.twitchUsername ? prev : { twitchUsername: ext.viewer.login }));
+        setProfile((prev) =>
+          prev.twitchUsername
+            ? prev
+            : { twitchUsername: ext.viewer.login, extensionName: prev.extensionName || 'Gears HUD' }
+        );
       }
 
       if (forcedMode) {
@@ -126,7 +130,7 @@ function App() {
           let nextGear = initialGearData;
           let nextCurrency = 'INR';
           let nextTheme = DEFAULT_THEME;
-          let nextProfile = { twitchUsername: '' };
+          let nextProfile = { twitchUsername: '', extensionName: 'Gears HUD' };
           let nextSettings = normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' });
 
           if (Array.isArray(data.gear_data)) {
@@ -151,8 +155,11 @@ function App() {
               nextTheme = incomingTheme;
             }
 
-            if (data.gear_data.profile?.twitchUsername) {
-              nextProfile = { twitchUsername: data.gear_data.profile.twitchUsername };
+            if (data.gear_data.profile?.twitchUsername || data.gear_data.profile?.extensionName) {
+              nextProfile = {
+                twitchUsername: data.gear_data.profile?.twitchUsername || '',
+                extensionName: data.gear_data.profile?.extensionName || 'Gears HUD',
+              };
             }
 
             if (data.gear_data.settings && typeof data.gear_data.settings === 'object') {
@@ -175,7 +182,10 @@ function App() {
           }
 
           if (!nextProfile.twitchUsername && window.Twitch?.ext?.viewer?.login) {
-            nextProfile = { twitchUsername: window.Twitch.ext.viewer.login };
+            nextProfile = {
+              twitchUsername: window.Twitch.ext.viewer.login,
+              extensionName: nextProfile.extensionName || 'Gears HUD',
+            };
           }
 
           setGear(hydrateGearImages(nextGear));
@@ -213,7 +223,7 @@ function App() {
         setGear(hydrateGearImages(initialGearData));
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
-        setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
+        setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '', extensionName: 'Gears HUD' });
         setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
         hasLoadedConfig.current = true;
         setIsLoadingConfig(false);
@@ -241,10 +251,13 @@ function App() {
           setCurrency(['INR', 'USD', 'EU'].includes(parsed.currency) ? parsed.currency : 'INR');
         }
 
-        if (parsed.profile?.twitchUsername) {
-          setProfile({ twitchUsername: parsed.profile.twitchUsername });
+        if (parsed.profile?.twitchUsername || parsed.profile?.extensionName) {
+          setProfile({
+            twitchUsername: parsed.profile?.twitchUsername || '',
+            extensionName: parsed.profile?.extensionName || 'Gears HUD',
+          });
         } else {
-          setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
+          setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '', extensionName: 'Gears HUD' });
         }
 
         if (parsed.settings && typeof parsed.settings === 'object') {
@@ -256,7 +269,7 @@ function App() {
         setGear(hydrateGearImages(initialGearData));
         setTheme(DEFAULT_THEME);
         setCurrency('INR');
-        setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '' });
+        setProfile({ twitchUsername: window.Twitch?.ext?.viewer?.login || '', extensionName: 'Gears HUD' });
         setPanelSettings(normalizeSettings({ showCta: true, ctaLabel: 'Buy Now' }));
       }
       
@@ -278,6 +291,7 @@ function App() {
     const payloadCurrency = ['INR', 'USD', 'EU'].includes(nextCurrency) ? nextCurrency : currency;
     const payloadProfile = {
       twitchUsername: nextProfile?.twitchUsername || profile.twitchUsername || '',
+      extensionName: (nextProfile?.extensionName || profile.extensionName || 'Gears HUD').slice(0, 32),
     };
     const payloadSettings = normalizeSettings(nextSettings || panelSettings);
 

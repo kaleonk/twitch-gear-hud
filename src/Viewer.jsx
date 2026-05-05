@@ -20,6 +20,15 @@ const iconByType = {
   headset: Headphones,
 };
 
+const typeBgClass = {
+  gpu: 'bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.28),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(99,102,241,0.22),transparent_45%),linear-gradient(120deg,rgba(15,23,42,0.92),rgba(2,6,23,0.98))]',
+  cpu: 'bg-[radial-gradient(circle_at_80%_20%,rgba(129,140,248,0.24),transparent_44%),radial-gradient(circle_at_20%_70%,rgba(34,197,94,0.18),transparent_46%),linear-gradient(120deg,rgba(2,6,23,0.93),rgba(15,23,42,0.96))]',
+  monitor: 'bg-[radial-gradient(circle_at_70%_15%,rgba(125,211,252,0.24),transparent_40%),linear-gradient(120deg,rgba(30,41,59,0.9),rgba(2,6,23,0.98))]',
+  mouse: 'bg-[radial-gradient(circle_at_30%_25%,rgba(16,185,129,0.2),transparent_42%),radial-gradient(circle_at_85%_80%,rgba(59,130,246,0.2),transparent_44%),linear-gradient(120deg,rgba(15,23,42,0.92),rgba(2,6,23,0.98))]',
+  keyboard: 'bg-[radial-gradient(circle_at_30%_15%,rgba(236,72,153,0.18),transparent_40%),radial-gradient(circle_at_70%_75%,rgba(59,130,246,0.22),transparent_42%),linear-gradient(120deg,rgba(15,23,42,0.92),rgba(2,6,23,0.98))]',
+  headset: 'bg-[radial-gradient(circle_at_75%_30%,rgba(249,115,22,0.16),transparent_42%),radial-gradient(circle_at_15%_80%,rgba(14,165,233,0.2),transparent_46%),linear-gradient(120deg,rgba(2,6,23,0.94),rgba(15,23,42,0.96))]',
+};
+
 const themeStyles = {
   midnight: {
     shell: 'border-[#1d2554] bg-[radial-gradient(circle_at_top,#0e1640_0%,#060a1d_48%,#040718_100%)] text-[#9aa7e4]',
@@ -113,6 +122,7 @@ const formatPrice = (value, currency) => {
 const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
   const styles = themeStyles[theme] || themeStyles.midnight;
   const username = (profile?.twitchUsername || '').trim();
+  const extensionName = (profile?.extensionName || 'Gears HUD').trim();
   const showCta = settings?.showCta !== false;
   const ctaLabel = (settings?.ctaLabel || 'Buy Now').trim() || 'Buy Now';
   const showImages = settings?.showImages !== false;
@@ -123,25 +133,25 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
   const scaleClasses = {
     sm: {
       title: 'text-[16px] md:text-2xl',
-      spec: 'text-[10px] md:text-base',
+      spec: 'text-[12px] md:text-[16px]',
       price: 'text-[15px] md:text-2xl',
       button: 'text-[11px] md:text-lg',
     },
     md: {
       title: 'text-[18px] md:text-3xl',
-      spec: 'text-[11px] md:text-lg',
+      spec: 'text-[13px] md:text-[18px]',
       price: 'text-[17px] md:text-3xl',
       button: 'text-[12px] md:text-xl',
     },
     lg: {
       title: 'text-[20px] md:text-[34px]',
-      spec: 'text-[12px] md:text-xl',
+      spec: 'text-[14px] md:text-[20px]',
       price: 'text-[19px] md:text-[34px]',
       button: 'text-[13px] md:text-2xl',
     },
     xl: {
       title: 'text-[22px] md:text-[38px]',
-      spec: 'text-[13px] md:text-2xl',
+      spec: 'text-[15px] md:text-[22px]',
       price: 'text-[21px] md:text-[38px]',
       button: 'text-[14px] md:text-[26px]',
     },
@@ -156,9 +166,14 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
       style={{ minHeight: `${panelHeight}px` }}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
-        <h2 className={`text-[13px] font-semibold tracking-[0.08em] md:text-xl ${styles.title}`}>
+        <div>
+          <p className={`text-[10px] font-semibold uppercase tracking-[0.12em] md:text-xs ${styles.footer}`}>
+            {extensionName}
+          </p>
+          <h2 className={`text-[13px] font-semibold tracking-[0.08em] md:text-xl ${styles.title}`}>
           SETUP · {username ? `@${username}` : `CHANNEL ${channelId}`}
-        </h2>
+          </h2>
+        </div>
         <span className={`rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] md:text-[10px] ${styles.badge}`}>
           {theme}
         </span>
@@ -172,6 +187,7 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3 md:gap-3">
           {gear.map((item) => {
             const Icon = iconByType[String(item.type || '').toLowerCase()] || Monitor;
+            const typeKey = String(item.type || '').toLowerCase();
             const rawLink = String(item.link || '').trim();
             const finalLink = AMAZON_LINK_REGEX.test(rawLink) ? rawLink : FALLBACK_AFFILIATE_LINK;
 
@@ -182,13 +198,16 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
               >
                 {showImages && item.image ? (
                   <>
+                    <div className={`absolute inset-0 ${typeBgClass[typeKey] || typeBgClass.monitor}`} />
                     <div
-                      className="absolute inset-0 bg-cover bg-center opacity-35"
+                      className="absolute inset-0 bg-cover bg-center opacity-45"
                       style={{ backgroundImage: `url('${item.image}')` }}
                     />
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(2,8,23,0.92)_0%,rgba(2,8,23,0.7)_45%,rgba(2,8,23,0.85)_100%)]" />
                   </>
-                ) : null}
+                ) : (
+                  <div className={`absolute inset-0 ${typeBgClass[typeKey] || typeBgClass.monitor}`} />
+                )}
 
                 <div className="relative z-10">
                 <div className={`mb-1.5 inline-flex h-7 w-7 items-center justify-center rounded-lg border md:h-9 md:w-9 ${styles.icon}`}>
@@ -224,7 +243,7 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
         </div>
       )}
 
-      <p className={`mt-2 text-center text-[9px] md:text-[11px] ${styles.footer}`}>Powered by GearHUD · links may earn commission</p>
+      <p className={`mt-2 text-center text-[9px] md:text-[11px] ${styles.footer}`}>Powered by {extensionName} · links may earn commission</p>
     </div>
   );
 };
