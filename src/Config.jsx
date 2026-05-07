@@ -93,7 +93,7 @@ const Config = ({
       currency,
       {
         twitchUsername: username ? username.toLowerCase() : '',
-        extensionName: 'RigBoard',
+        extensionName: profile.extensionName || 'RigBoard',
       },
       { ...localSettings, showImages: false }
     );
@@ -144,9 +144,13 @@ const Config = ({
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
         <label className="text-[24px] text-[#9fb5ec] sm:text-base">Extension Name</label>
-        <div className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] sm:text-xl">
-          RigBoard
-        </div>
+        <input
+          type="text"
+          value={profile.extensionName || 'RigBoard'}
+          onChange={(e) => setProfile((prev) => ({ ...prev, extensionName: e.target.value }))}
+          placeholder="RigBoard"
+          className="w-full rounded-lg border border-[#3a4b79] bg-[#0f1730] px-4 py-2 text-[24px] text-[#dce7ff] placeholder:text-[#7288be] focus:border-[#57c3ff] focus:outline-none sm:text-xl"
+        />
       </div>
 
       <div className="mb-3 grid items-center gap-2 sm:grid-cols-[180px_1fr]">
