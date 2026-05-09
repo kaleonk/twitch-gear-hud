@@ -137,13 +137,15 @@ const getSetupScore = (gear, profile) => {
   const hasUsername = String(profile?.twitchUsername || '').trim().length > 0 ? 10 : 0;
   const score = Math.max(0, Math.min(100, Math.round(itemPoints + imagePoints + linkPoints + pricePoints + hasUsername)));
 
-  if (score <= 40) return { score, tier: 'Budget Build 🥉' };
-  if (score <= 70) return { score, tier: 'Mid-tier Setup 🥈' };
-  if (score <= 90) return { score, tier: 'Pro Rig 🥇' };
-  return { score, tier: 'Absolute Monster 🔥' };
+  if (score <= 30) return { score, tier: '🥉 Budget Warrior' };
+  if (score <= 60) return { score, tier: '⚡ Mid-tier Setup' };
+  if (score <= 85) return { score, tier: '💎 High-End Build' };
+  if (score <= 95) return { score, tier: '🔥 Enthusiast Rig' };
+  return { score, tier: '👑 Top 1% Monster' };
 };
 
 const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
+  const [showScoreInfo, setShowScoreInfo] = React.useState(false);
   const styles = themeStyles[theme] || themeStyles.midnight;
   const username = (profile?.twitchUsername || '').trim();
   const extensionName = 'RigBoard';
@@ -207,10 +209,55 @@ const Viewer = ({ gear, theme, channelId, currency, profile, settings }) => {
       <div className="mb-3 rounded-lg border border-cyan-300/40 bg-cyan-400/10 p-2">
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-semibold tracking-[0.08em] text-cyan-100 md:text-xs">SETUP SCORE</p>
-          <p className="text-[16px] font-bold text-cyan-200 md:text-lg">{score}/100</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[16px] font-bold text-cyan-200 md:text-lg">{score}/100</p>
+            <button
+              type="button"
+              aria-label="Setup score explained"
+              onClick={() => setShowScoreInfo(true)}
+              className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-cyan-200/60 bg-cyan-100/10 text-[11px] font-bold text-cyan-100 transition hover:bg-cyan-100/20"
+            >
+              i
+            </button>
+          </div>
         </div>
         <p className="text-[10px] font-semibold text-cyan-100 md:text-xs">{tier}</p>
       </div>
+
+      {showScoreInfo ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-md rounded-xl border border-cyan-300/40 bg-[#091226] p-4 text-cyan-100 shadow-2xl">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <h3 className="text-sm font-bold tracking-[0.08em] md:text-base">🎮 SETUP SCORE EXPLAINED</h3>
+              <button
+                type="button"
+                onClick={() => setShowScoreInfo(false)}
+                className="rounded border border-cyan-300/40 px-2 py-0.5 text-xs font-semibold hover:bg-cyan-100/10"
+              >
+                Close
+              </button>
+            </div>
+
+            <p className="text-sm font-semibold">Your Score: {score}/100</p>
+            <p className="mb-3 text-sm">Tier: {tier}</p>
+
+            <p className="text-xs font-semibold tracking-[0.06em]">HOW TO IMPROVE:</p>
+            <p className="text-xs">✓ Add more gear items (+10 each)</p>
+            <p className="text-xs">✓ Add prices (+5 each)</p>
+            <p className="text-xs">✓ Add specs/details (+3 each)</p>
+            <p className="mb-3 text-xs">✓ Add Amazon links (+2 each)</p>
+
+            <p className="text-xs font-semibold tracking-[0.06em]">TIER BADGES:</p>
+            <p className="text-xs">🥉 0-30: Budget Warrior</p>
+            <p className="text-xs">⚡ 31-60: Mid-tier Setup</p>
+            <p className="text-xs">💎 61-85: High-End Build</p>
+            <p className="text-xs">🔥 86-95: Enthusiast Rig</p>
+            <p className="mb-3 text-xs">👑 96-100: Top 1% Monster</p>
+
+            <p className="text-xs font-semibold">Share your score on Twitter/bio! 📸</p>
+          </div>
+        </div>
+      ) : null}
 
       {gear.length === 0 ? (
         <div className={`rounded-xl border p-6 text-center text-sm ${styles.card}`}>
