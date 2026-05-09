@@ -5,7 +5,7 @@ import { DEFAULT_THEME, THEME_OPTIONS } from './themes';
 import Viewer from './Viewer';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,25}$/;
-const AMAZON_LINK_REGEX = /^https?:\/\/(www\.)?amazon\.com\//i;
+const AMAZON_LINK_REGEX = /^https?:\/\/(www\.)?(amazon\.(com|co\.uk|co\.jp|de|fr|it|es|ca|com\.au|com\.br|com\.mx|in|nl|se|sg|ae|com\.tr)|amzn\.to)\//i;
 
 const Config = ({
   gear,
@@ -78,17 +78,19 @@ const Config = ({
       alert('If provided, Twitch username must contain only letters, numbers, or underscore.');
       return;
     }
-    const invalidLinkCard = localGear.find(
+    const hadInvalidLinks = localGear.some(
       (item) => item.link && !AMAZON_LINK_REGEX.test(String(item.link).trim())
     );
-    if (invalidLinkCard) {
-      alert('Only Amazon.com affiliate links are allowed');
-      return;
-    }
+    const sanitizedGear = localGear.map((item) => {
+      const rawLink = String(item.link || '').trim();
+      if (!rawLink) return item;
+      if (AMAZON_LINK_REGEX.test(rawLink)) return { ...item, link: rawLink };
+      return { ...item, link: '' };
+    });
 
-    setGear(localGear);
+    setGear(sanitizedGear);
     const result = await onSave(
-      localGear,
+      sanitizedGear,
       theme,
       currency,
       {
@@ -97,7 +99,11 @@ const Config = ({
       },
       { ...localSettings, showImages: false }
     );
-    alert(result.message);
+    if (hadInvalidLinks) {
+      alert(`Saved with cleanup: Non-Amazon affiliate links were removed. ${result.message}`);
+    } else {
+      alert(result.message);
+    }
   };
 
   const handleResetAll = async () => {
@@ -343,7 +349,7 @@ const Config = ({
                 }`}
               />
               {selectedCard.link && !AMAZON_LINK_REGEX.test(selectedCard.link) && (
-                <p className="text-xs text-red-500">Only Amazon.com affiliate links are allowed</p>
+                <p className="text-xs text-red-500">Only Amazon links are allowed (amazon domains or amzn.to)</p>
               )}
             </div>
           </div>
