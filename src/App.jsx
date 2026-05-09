@@ -61,6 +61,7 @@ function App() {
 
     ext.onAuthorized((auth) => {
       setIsExtensionEnv(true);
+      // CRITICAL FIX: Always use channelId from auth, which is the broadcaster's channel
       if (auth?.channelId) {
         setChannelId(auth.channelId);
       }
@@ -81,7 +82,16 @@ function App() {
       // Config UI is opened via Config Path using ?mode=config.
       setMode('viewer');
     });
-  }, [forcedMode]);
+    
+    // ADDITIONAL FIX: Listen to context changes to handle channel switches
+    ext.onContext((context) => {
+      // context.channelId is ALWAYS the broadcaster's channel
+      if (context?.channelId && context.channelId !== channelId) {
+        setChannelId(context.channelId);
+        hasLoadedConfig.current = false; // Force reload for new channel
+      }
+    });
+  }, [forcedMode, channelId]);
 
   useEffect(() => {
     // Prevent reloading if we already have the config for this channel
