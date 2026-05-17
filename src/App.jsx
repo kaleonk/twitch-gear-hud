@@ -31,6 +31,59 @@ const normalizeSettings = (raw) => {
   return { showCta, ctaLabel, showImages, textScale, lineHeight, panelHeight };
 };
 
+const parseStoredPayload = (rawPayload) => {
+  let nextGear = initialGearData;
+  let nextCurrency = 'INR';
+  let nextTheme = DEFAULT_THEME;
+  let nextProfile = { twitchUsername: '', extensionName: EXTENSION_DISPLAY_NAME };
+  let nextSettings = normalizeSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false });
+
+  if (Array.isArray(rawPayload)) {
+    nextGear = rawPayload;
+  } else if (rawPayload && typeof rawPayload === 'object') {
+    if (Array.isArray(rawPayload.items)) {
+      nextGear = rawPayload.items;
+    }
+
+    if (rawPayload.currency === 'EUR') {
+      nextCurrency = 'EU';
+    } else if (['INR', 'USD', 'EU'].includes(rawPayload.currency)) {
+      nextCurrency = rawPayload.currency;
+    }
+
+    const incomingTheme = rawPayload.theme;
+    if (incomingTheme === 'sunset') {
+      nextTheme = 'ember';
+    } else if (incomingTheme === 'forest') {
+      nextTheme = 'frost';
+    } else if (isValidTheme(incomingTheme)) {
+      nextTheme = incomingTheme;
+    }
+
+    if (rawPayload.profile?.twitchUsername || rawPayload.profile?.extensionName) {
+      nextProfile = {
+        twitchUsername: rawPayload.profile?.twitchUsername || '',
+        extensionName: EXTENSION_DISPLAY_NAME,
+      };
+    }
+
+    if (rawPayload.settings && typeof rawPayload.settings === 'object') {
+      nextSettings = normalizeSettings(rawPayload.settings);
+    } else {
+      nextSettings = normalizeSettings({
+        showCta: rawPayload.showCta ?? rawPayload.showButton,
+        ctaLabel: rawPayload.ctaLabel ?? rawPayload.buttonLabel,
+        showImages: rawPayload.showImages,
+        textScale: rawPayload.textScale,
+        lineHeight: rawPayload.lineHeight,
+        panelHeight: rawPayload.panelHeight,
+      });
+    }
+  }
+
+  return { nextGear, nextCurrency, nextTheme, nextProfile, nextSettings };
+};
+
 function App() {
   const forcedMode = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
@@ -102,6 +155,28 @@ function App() {
 
     const loadConfig = async () => {
       setIsLoadingConfig(true);
+      const ext = window.Twitch?.ext;
+
+      // Primary source in hosted Twitch mode: Extension Configuration Service.
+      if (ext?.configuration) {
+        try {
+          const content = ext.configuration.broadcaster?.content;
+          if (content) {
+            const parsed = JSON.parse(content);
+            const { nextGear, nextCurrency, nextTheme, nextProfile, nextSettings } = parseStoredPayload(parsed);
+            setGear(hydrateGearImages(nextGear));
+            setTheme(nextTheme);
+            setCurrency(nextCurrency);
+            setProfile(nextProfile);
+            setPanelSettings(nextSettings);
+            hasLoadedConfig.current = true;
+            setIsLoadingConfig(false);
+            return;
+          }
+        } catch (err) {
+          console.warn('Failed to parse Twitch configuration content:', err?.message || err);
+        }
+      }
 
       // Wrapper to add timeout to the Supabase fetch
       const fetchWithTimeout = async () => {
@@ -131,55 +206,10 @@ function App() {
 
         if (response && response.data) {
           const data = response.data;
-          let nextGear = initialGearData;
-          let nextCurrency = 'INR';
-          let nextTheme = DEFAULT_THEME;
-          let nextProfile = { twitchUsername: '', extensionName: EXTENSION_DISPLAY_NAME };
-          let nextSettings = normalizeSettings({ showCta: true, ctaLabel: 'Buy Now', showImages: false });
-
-          if (Array.isArray(data.gear_data)) {
-            nextGear = data.gear_data;
-          } else if (data.gear_data && typeof data.gear_data === 'object') {
-            if (Array.isArray(data.gear_data.items)) {
-              nextGear = data.gear_data.items;
-            }
-
-            if (data.gear_data.currency === 'EUR') {
-              nextCurrency = 'EU';
-            } else if (['INR', 'USD', 'EU'].includes(data.gear_data.currency)) {
-              nextCurrency = data.gear_data.currency;
-            }
-
-            const incomingTheme = data.gear_data.theme;
-            if (incomingTheme === 'sunset') {
-              nextTheme = 'ember';
-            } else if (incomingTheme === 'forest') {
-              nextTheme = 'frost';
-            } else if (isValidTheme(incomingTheme)) {
-              nextTheme = incomingTheme;
-            }
-
-            if (data.gear_data.profile?.twitchUsername || data.gear_data.profile?.extensionName) {
-              nextProfile = {
-                twitchUsername: data.gear_data.profile?.twitchUsername || '',
-                extensionName: EXTENSION_DISPLAY_NAME,
-              };
-            }
-
-            if (data.gear_data.settings && typeof data.gear_data.settings === 'object') {
-              nextSettings = normalizeSettings(data.gear_data.settings);
-            } else {
-              // Backward compatibility: some older records stored settings at root.
-              nextSettings = normalizeSettings({
-                showCta: data.gear_data.showCta ?? data.gear_data.showButton,
-                ctaLabel: data.gear_data.ctaLabel ?? data.gear_data.buttonLabel,
-                showImages: data.gear_data.showImages,
-                textScale: data.gear_data.textScale,
-                lineHeight: data.gear_data.lineHeight,
-                panelHeight: data.gear_data.panelHeight,
-              });
-            }
-          }
+          const { nextGear, nextCurrency, nextTheme: parsedTheme, nextProfile: parsedProfile, nextSettings } =
+            parseStoredPayload(data.gear_data);
+          let nextTheme = parsedTheme;
+          let nextProfile = parsedProfile;
 
           if (!isValidTheme(nextTheme) && Boolean(data.is_pro)) {
             nextTheme = 'neon';
@@ -316,6 +346,27 @@ function App() {
       })
     );
 
+    const ext = window.Twitch?.ext;
+    if (ext?.configuration) {
+      try {
+        ext.configuration.set('broadcaster', '1', JSON.stringify({
+          items: payloadGear,
+          currency: payloadCurrency,
+          theme: payloadTheme,
+          profile: payloadProfile,
+          settings: payloadSettings,
+        }));
+      } catch (err) {
+        console.error('Twitch configuration save error:', err?.message || err);
+        return { ok: false, message: 'Could not save Twitch configuration. Please try again.' };
+      }
+    }
+
+    // In hosted Twitch environment, avoid hard-failing save due to third-party HTTP issues.
+    if (ext?.configuration && !supabase) {
+      return { ok: true, message: 'Saved to Twitch configuration.' };
+    }
+
     if (!supabase) {
       return { ok: true, message: 'Saved locally (.env not configured yet).' };
     }
@@ -339,10 +390,13 @@ function App() {
 
     if (error) {
       console.error('Supabase save error:', error.message);
+      if (ext?.configuration) {
+        return { ok: true, message: 'Saved to Twitch configuration.' };
+      }
       return { ok: false, message: `Supabase error: ${error.message}` };
     }
 
-    return { ok: true, message: 'Saved to cloud.' };
+    return { ok: true, message: ext?.configuration ? 'Saved to Twitch configuration.' : 'Saved to cloud.' };
   };
 
   return (
